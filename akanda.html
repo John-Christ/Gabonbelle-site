@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parc National d'Akanda | Gabonbelle - Prestige Littoral</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --gold: #D4AF37; 
+            --gold-hover: #f1c40f;
+            --dark: #0a0a0a; 
+            --dark-soft: #141414;
+            --glass: rgba(10, 10, 10, 0.9);
+            --white: #ffffff; 
+        }
+
+        * { box-sizing: border-box; scroll-behavior: smooth; }
+        body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--dark); color: var(--white); line-height: 1.7; overflow-x: hidden; transition: filter 0.4s ease; }
+        
+        /* --- BLUR EFFECT WHEN MODAL ACTIVE --- */
+        body.modal-open-blur > :not(#pro-modal) {
+            filter: blur(8px) brightness(0.7);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        /* --- PRO MODAL STYLES --- */
+        #pro-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            justify-content: center; align-items: center;
+            z-index: 20000;
+        }
+        .modal-content {
+            background: var(--dark-soft);
+            padding: 40px;
+            border: 1px solid var(--gold);
+            border-radius: 15px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            transform: scale(0.8);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .modal-active .modal-content { transform: scale(1); opacity: 1; }
+        .modal-content h3 { font-family: 'Playfair Display', serif; color: var(--gold); margin-top: 0; font-size: 1.8rem; }
+        .modal-btn {
+            background: var(--gold); color: black; border: none;
+            padding: 12px 30px; border-radius: 4px; cursor: pointer;
+            font-weight: 600; margin-top: 25px; text-transform: uppercase;
+            letter-spacing: 1px; transition: 0.3s;
+        }
+        .modal-btn:hover { background: var(--gold-hover); transform: scale(1.05); }
+
+        /* --- NAVIGATION FIXE --- */
+        nav { 
+            position: fixed; top: 0; width: 100%; padding: 15px 6%; 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: var(--glass); backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2); z-index: 10000;
+            height: 70px;
+        }
+
+        .logo { 
+            font-family: 'Playfair Display', serif; font-size: 1.8rem; letter-spacing: 2px;
+            display: flex; align-items: center; text-decoration: none; color: white;
+            z-index: 10001;
+        }
+        .logo span { color: var(--gold); font-style: italic; font-weight: bold; }
+        .logo-dot { height: 7px; width: 7px; background: var(--gold); border-radius: 50%; margin-left: 5px; box-shadow: 0 0 10px var(--gold); }
+
+        .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; z-index: 10001; }
+        .hamburger span { width: 25px; height: 2px; background-color: var(--gold); transition: 0.3s; }
+
+        nav ul { display: flex; list-style: none; gap: 25px; margin: 0; padding: 0; } 
+        nav ul li a { 
+            color: var(--white); text-decoration: none; font-size: 0.85rem; 
+            text-transform: uppercase; letter-spacing: 1.5px; transition: 0.3s;
+        }
+        nav ul li a:hover { color: var(--gold); }
+
+        @media (max-width: 900px) {
+            .hamburger { display: flex; }
+            nav ul {
+                position: fixed; top: 0; right: -100%; height: 100vh; width: 70%;
+                background: var(--dark-soft); flex-direction: column;
+                justify-content: center; align-items: center; transition: 0.4s ease-in-out;
+                box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+            }
+            nav ul.active { right: 0; }
+        }
+
+        .hero-akanda { 
+            height: 80vh; 
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.8)), 
+            url('https://lh3.googleusercontent.com/p/AF1QipN1E3aJDZxBIcA6lD6rtnj5eRObRNJV4NmZp5QR=s680-w680-h510-rw'); 
+            background-size: cover; background-position: center;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            text-align: center; border-bottom: 2px solid var(--gold);
+        }
+        .hero-akanda h1 { 
+            font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 6vw, 4.5rem); 
+            color: var(--gold); margin: 0; text-shadow: 2px 4px 20px rgba(0,0,0,0.9);
+        }
+        .hero-akanda p { font-size: 1.2rem; letter-spacing: 4px; text-transform: uppercase; color: white; }
+
+        section { padding: 80px 10%; }
+        .container-slim { max-width: 900px; margin: 0 auto; }
+        h2 { font-family: 'Playfair Display', serif; font-size: 2.5rem; color: var(--gold); margin-top: 40px; }
+        
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin: 40px 0; }
+        .feature-card { background: var(--dark-soft); border-radius: 12px; padding: 30px; border: 1px solid #222; transition: 0.3s; }
+        .feature-card:hover { border-color: var(--gold); transform: translateY(-5px); }
+        .feature-card h3 { color: var(--gold); font-family: 'Playfair Display', serif; font-size: 1.5rem; }
+
+        .whatsapp-float {
+            position: fixed; bottom: 30px; right: 30px;
+            background-color: var(--gold); color: black;
+            width: 60px; height: 60px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+            z-index: 10000; transition: 0.3s; font-size: 30px;
+        }
+        .whatsapp-float svg { width: 30px; fill: black; }
+
+        .btn { 
+            background: var(--gold); color: black; padding: 15px 35px; border: none; 
+            cursor: pointer; font-weight: 600; text-transform: uppercase; border-radius: 4px; 
+            text-decoration: none; display: inline-block; transition: 0.3s;
+        }
+        .btn:disabled { opacity: 0.6; cursor: wait; }
+
+        footer { padding: 40px; text-align: center; color: #444; font-size: 0.8rem; border-top: 1px solid #111; margin-top: 60px; }
+    </style>
+</head>
+<body>
+
+    <div id="pro-modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Notification</h3>
+            <p id="modal-message"></p>
+            <button class="modal-btn" onclick="closeModal()">Fermer</button>
+        </div>
+    </div>
+
+    <a href="https://wa.me/24174701931" class="whatsapp-float" target="_blank">
+        <svg viewBox="0 0 448 512"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.1 0-65.6-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-28.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-5.6-2.8-23.6-8.7-45-27.7-16.6-14.8-27.8-33.2-31.1-38.7-3.2-5.5-.3-8.5 2.5-11.2 2.5-2.5 5.6-6.5 8.3-9.7 2.8-3.3 3.7-5.6 5.6-9.3 1.9-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 13.2 5.8 23.5 9.2 31.5 11.8 13.3 4.2 25.4 3.6 35 2.2 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
+    </a>
+
+    <nav>
+        <a href="index.html#home" class="logo">GABON<span>BELLE</span><div class="logo-dot"></div></a>
+        <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+        <ul id="nav-menu">
+            <li><a href="index.html">Accueil</a></li>
+            <li><a href="boutique.html">Boutique</a></li>
+            <li><a href="akanda.html" style="color:var(--gold)">Tourisme</a></li>
+            <li><a href="bouquets.html">Bouquets</a></li>
+            <li><a href="chasse.html">Permis</a></li>
+            <li><a href="account.html">Compte</a></li>
+        </ul>
+    </nav>
+
+    <header class="hero-akanda">
+        <h1>Parc National d'Akanda</h1>
+        <p>Le Sanctuaire Littoral entre Ciel et Mer</p>
+    </header>
+
+    <section>
+        <div class="container-slim">
+            <h2>L'Émeraude de l'Estuaire</h2>
+            <p>Situé aux portes de Libreville, le <strong>Parc National d'Akanda</strong> est un chef-d'œuvre de la nature où les mangroves labyrinthiques rencontrent les vagues de l'Atlantique.</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Observation d'Oiseaux</h3>
+                    <p>Accueillez des milliers d'oiseaux migrateurs venant d'Europe et d'Asie dans un cadre préservé.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Labyrinthe de Mangroves</h3>
+                    <p>Naviguez en silence à travers les palétuviers pour découvrir une biodiversité marine exceptionnelle.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Pontes de Tortues</h3>
+                    <p>Observez le spectacle émouvant des tortues luths venant confier leurs œufs aux plages sauvages.</p>
+                </div>
+            </div>
+
+            <div style="background:#111; padding:40px; border-radius:10px; margin:50px 0; border-left: 5px solid var(--gold);">
+                <h3 style="color:var(--gold); margin-top:0;">Services Gabonbelle :</h3>
+                <ul style="color:#ccc;">
+                    <li>Excursions privées en vedette rapide.</li>
+                    <li>Guides naturalistes bilingues experts.</li>
+                    <li>Pique-nique de luxe sur bancs de sable isolés.</li>
+                    <li>Matériel de vision nocturne pour les tortues.</li>
+                </ul>
+            </div>
+
+            <div style="text-align:center;">
+                <a id="btn-reserver" class="btn" onclick="reserverService('Safari Akanda Prestige', '4500')">Réserver une Expédition</a>
+            </div>
+        </div>
+    </section>
+
+
+   <footer>
+
+
+     <section id="delivery-solutions" style="background: #0a0a0a; padding: 60px 10%; text-align: center; border-top: 1px solid #1a1a1a;">
+    <h2 style="font-family: 'Playfair Display', serif; color: var(--gold); font-size: 2rem; margin-bottom: 40px;">Nos Solutions de Livraison</h2>
+    
+    <div class="delivery-grid" style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;">
+        
+        <div class="delivery-item">
+            <div class="delivery-img-container">
+                <img src="https://cdn-icons-png.flaticon.com/512/709/709790.png" alt="Livraison Express">
+            </div>
+            <h3>DHL Express Libreville</h3>
+            <p>Remise en main propre sous 24h dans la capitale gabonaise par nos coursiers privés.</p>
+        </div>
+
+        <div class="delivery-item">
+            <div class="delivery-img-container">
+                <img src="https://cdn-icons-png.flaticon.com/512/2853/2853330.png" alt="Expédition Internationale">
+            </div>
+            <h3>FedEx Sécurité Diplomatique</h3>
+            <p>Expédition mondiale assurée via valise diplomatique ou transporteur haute sécurité.</p>
+        </div>
+
+        <div class="delivery-item">
+            <div class="delivery-img-container">
+                <img src="https://cdn-icons-png.flaticon.com/512/2555/2555013.png" alt="Transport Spécialisé">
+            </div>
+            <h3>UPS Convoi Privé</h3>
+            <p>Logistique sur mesure pour le transport d'ivoire végétal, masques précieux et équipements de chasse.</p>
+        </div>
+
+    </div>
+
+    <style>
+        .delivery-grid { max-width: 1200px; margin: 0 auto; }
+        .delivery-item { flex: 1; min-width: 250px; max-width: 320px; padding: 20px; }
+        .delivery-img-container {
+            width: 80px; height: 80px; margin: 0 auto 20px;
+            border-radius: 50%; border: 1px solid var(--gold);
+            padding: 20px; display: flex; align-items: center; justify-content: center;
+            background: rgba(212, 175, 55, 0.05); transition: 0.4s;
+        }
+        .delivery-item:hover .delivery-img-container {
+            background: var(--gold); transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+        }
+        .delivery-img-container img {
+            width: 100%; height: auto;
+            filter: brightness(0) invert(1); /* Rend les icônes blanches */
+            transition: 0.3s;
+        }
+        .delivery-item:hover img {
+            filter: brightness(0); /* Devient noir au survol du bouton Gold */
+        }
+        .delivery-item h3 { font-family: 'Playfair Display', serif; color: var(--white); font-size: 1.3rem; margin-bottom: 15px; }
+        .delivery-item p { color: #888; font-size: 0.9rem; line-height: 1.6; }
+    </style>
+</section>
+
+        
+        <!--section id="delivery-solutions" style="background: #0a0a0a; padding: 60px 10%; text-align: center; border-top: 1px solid #1a1a1a;">
+    <h2 style="font-family: 'Playfair Display', serif; color: var(--gold); font-size: 2rem; margin-bottom: 40px;">Nos Solutions de Livraison</h2>
+    
+    <div class="delivery-grid" style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;">
+        
+        <div class="delivery-item">
+            <div class="delivery-img-container">
+                <img src="https://john-christ.github.io/Gabonbelle/dhl.png" alt="Livraison Express">
+            </div>
+            <h3>DHL Express Libreville</h3>
+            <p>Remise en main propre sous 24h dans la capitale.</p>
+        </div>
+
+        <div class="delivery-item">
+            <div class="delivery-img-container">
+                <img src="https://john-christ.github.io/Gabonbelle/FedEx.png" alt="Expédition Internationale">
+            </div>
+            <h3>FedEx Sécurité Diplomatique</h3>
+            <p>Envoi sécurisé avec suivi prioritaire pour l'international.</p>
+        </div>
+
+        <div class="delivery-item">
+            <div class="delivery-img-container">
+                <img src="https://raw.githubusercontent.com/John-Christ/Gabonbelle/refs/heads/main/UPS.jfif" alt="Transport Spécialisé">
+            </div>
+            <h3>UPS Convoi Privé</h3>
+            <p>Logistique sur mesure pour les pièces volumineuses et fragiles.</p>
+        </div>   
+
+    </div-->
+
+<br>
+
+<div style="margin-bottom: 20px; display: flex; justify-content: center; gap: 30px;">
+    <a href="politique.html" style="color: #666; text-decoration: none; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='#666'">
+        Politique de Confidentialité
+    </a>
+    <a href="cgv.html" style="color: #666; text-decoration: none; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='#666'">
+        Conditions de Vente (CGV)
+    </a>
+</div>
+
+
+            
+<!--div id="cookie-banner" style="position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10,10,10,0.95); border-top: 1px solid var(--gold); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; z-index: 10001; font-size: 0.8rem;">
+    <p style="margin: 0;">En poursuivant votre navigation, vous acceptez l'utilisation de cookies pour assurer le bon fonctionnement des paiements et de votre espace membre.</p>
+    <button onclick="document.getElementById('cookie-banner').style.display='none'" style="background: var(--gold); border: none; padding: 8px 20px; cursor: pointer; font-weight: bold; border-radius: 3px;">ACCEPTER</button>
+</div>
+
+            
+            
+
+    <style>
+        .delivery-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .delivery-item {
+            flex: 1;
+            min-width: 250px;
+            max-width: 320px;
+            padding: 20px;
+            transition: 0.4s;
+        }
+        .delivery-img-container {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            border: 1px solid var(--gold);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(212, 175, 55, 0.05);
+            transition: 0.3s;
+        }
+        .delivery-item:hover .delivery-img-container {
+            background: var(--gold);
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+        }
+        .delivery-img-container img {
+            width: 100%;
+            height: auto;
+            filter: brightness(0) invert(1); /* Rend les icônes blanches pour le fond noir */
+            transition: 0.3s;
+        }
+        .delivery-item:hover img {
+            filter: brightness(0); /* Rend l'icône noire quand le fond devient gold au survol */
+        }
+        .delivery-item h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--white);
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        .delivery-item p {
+            color: #888;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        </style>
+    </section-->
+        
+        <p>© 2026 Gabonbelle Luxury Group. Libreville, Gabon.</p>
+    </footer>
+
+
+
+
+     <div id="cookie-banner" style="position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10,10,10,0.95); border-top: 1px solid var(--gold); padding: 15px 5%; display: none; justify-content: space-between; align-items: center; z-index: 10001; font-size: 0.8rem; backdrop-filter: blur(10px);">
+    <p style="margin: 0; color: #ccc;">
+        En poursuivant votre navigation, vous acceptez l'utilisation de cookies pour assurer le bon fonctionnement des paiements et de votre espace membre.
+    </p>
+    <button onclick="accepterCookies()" style="background: var(--gold); color: black; border: none; padding: 8px 25px; cursor: pointer; font-weight: bold; border-radius: 5px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;">
+        ACCEPTER
+    </button>
+</div>
+
+<script>
+    // Fonction pour vérifier si l'utilisateur a déjà accepté durant cette session
+    function verifierCookies() {
+        const aAccepte = sessionStorage.getItem('gb_cookies_accepted');
+        if (!aAccepte) {
+            // Si pas encore accepté, on affiche le bandeau
+            document.getElementById('cookie-banner').style.display = 'flex';
+        }
+    }
+
+    // Fonction pour enregistrer l'acceptation et masquer le bandeau
+    function accepterCookies() {
+        sessionStorage.setItem('gb_cookies_accepted', 'true');
+        document.getElementById('cookie-banner').style.display = 'none';
+    }
+
+    // Lancer la vérification au chargement de la page
+    window.addEventListener('load', verifierCookies);
+</script>
+
+
+
+    
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxT9HMjOOywNt_03qrPtZcR8-dBUicv7dvs2J-Pvi_gixVGPJ8Z-74u9BYWC9e1Me3u/exec";
+        
+        const hamburger = document.getElementById('hamburger');
+        const navMenu = document.getElementById('nav-menu');
+
+        hamburger.addEventListener('click', () => { navMenu.classList.toggle('active'); });
+
+        // --- MODAL LOGIC WITH BACKGROUND BLUR ---
+        function showModal(title, message) {
+            const modal = document.getElementById('pro-modal');
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            
+            modal.style.display = 'flex';
+            document.body.classList.add('modal-open-blur'); // Adds the blur to background
+            
+            setTimeout(() => modal.classList.add('modal-active'), 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('pro-modal');
+            modal.classList.remove('modal-active');
+            document.body.classList.remove('modal-open-blur'); // Removes blur
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+       // --- LOGIQUE DE RÉSERVATION MISE À JOUR ---
+function reserverService(nomService, prixService) {
+    const userEmail = localStorage.getItem('gb_email');
+    const btn = document.getElementById('btn-reserver');
+    
+    // LIEN PAYPAL SPÉCIFIQUE À AKANDA (À personnaliser si besoin)
+    const paypalLink = "https://www.paypal.com/ncp/payment/RDVYSGSQEABNC"; 
+
+    if (!localStorage.getItem('gb_logged')) {
+        showModal("Connexion Requise", "Veuillez vous connecter pour réserver votre expérience exclusive.");
+        setTimeout(() => { window.location.href = "account.html"; }, 2500);
+        return;
+    }
+
+    // Effet visuel de chargement
+    btn.innerText = "Traitement en cours...";
+    btn.style.pointerEvents = "none";
+    btn.style.opacity = "0.7";
+
+    fetch(SCRIPT_URL, {
+        method: 'POST',
+        // Utilisation de mode 'no-cors' retirée pour lire la réponse JSON du script mis à jour
+        body: JSON.stringify({
+            action: "addOrder",
+            email: userEmail,
+            service: nomService,
+            price: prixService,
+            paypalLink: paypalLink // TRANSMISSION DU LIEN ICI
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.result === "success") {
+            showModal("Prestige Akanda", "Votre réservation a été enregistrée. Effectuez votre paiement dans votre espace compte.");
+            setTimeout(() => { window.location.href = "account.html"; }, 3000);
+        } else {
+            resetButton(btn);
+            showModal("Erreur", data.message || "Une erreur est survenue.");
+        }
+    })
+    .catch(err => {
+        resetButton(btn);
+        console.error(err);
+        showModal("Erreur Réseau", "Impossible de joindre le serveur.");
+    });
+}
+
+        function resetButton(btn) {
+            btn.innerText = "Réserver une Expédition";
+            btn.style.pointerEvents = "auto";
+            btn.style.opacity = "1";
+        }
+    </script>
+
+</body>
+</html>

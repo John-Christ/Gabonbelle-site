@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gabon Luxury Safari & Hunting</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #D4AF37; --dark: #1a1a1a; --white: #ffffff; }
+        body { margin: 0; font-family: 'Poppins', sans-serif; background: #000; color: var(--white); overflow-x: hidden; }
+        
+        /* Navigation */
+        nav { position: fixed; width: 100%; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); z-index: 1000; }
+        nav ul { display: flex; list-style: none; gap: 25px; }
+        nav ul li a { color: white; text-decoration: none; font-weight: 500; transition: 0.3s; }
+        nav ul li a:hover { color: var(--gold); }
+
+        /* Hero Section */
+        .hero { height: 100vh; background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1920&q=80'); background-size: cover; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .hero h1 { font-family: 'Playfair Display', serif; font-size: 4rem; margin-bottom: 10px; }
+        
+        /* Chasse Légale (Rubrique) */
+        .legal-hunting { padding: 80px 10%; background: #0e1111; border-left: 5px solid var(--gold); margin: 40px 0; }
+        .legal-hunting h2 { color: var(--gold); }
+
+        /* Pricing Catalog */
+        .pricing { display: flex; justify-content: center; gap: 30px; padding: 50px; flex-wrap: wrap; }
+        .card { background: #222; padding: 40px; border-radius: 15px; width: 300px; text-align: center; border: 1px solid #333; position: relative; transition: 0.3s; }
+        .card:hover { transform: translateY(-10px); border-color: var(--gold); }
+        .promo-tag { position: absolute; top: 10px; right: 10px; background: red; padding: 5px 10px; font-size: 12px; border-radius: 5px; }
+        .price { font-size: 2rem; color: var(--gold); font-weight: bold; }
+        .old-price { text-decoration: line-through; color: #777; font-size: 1rem; }
+
+        /* Auth Form */
+        .auth-container { padding: 100px 10%; background: var(--dark); text-align: center; }
+        input { padding: 12px; margin: 10px; width: 250px; border-radius: 5px; border: none; }
+        .btn { background: var(--gold); color: black; padding: 12px 30px; border: none; cursor: pointer; font-weight: 600; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">GABON ELITE</div>
+        <ul>
+            <li><a href="#">Accueil</a></li>
+            <li><a href="#safari">Safari Photo</a></li>
+            <li><a href="#hunting">Chasse Sportive</a></li>
+            <li><a href="#hotels">Hôtels Luxe</a></li>
+            <li><a href="#legal">Permis & Armes</a></li>
+            <li><a href="#account">Mon Compte</a></li>
+        </ul>
+    </nav>
+
+    <header class="hero">
+        <h1>L'Éden de l'Afrique vous attend</h1>
+        <p>Vivez l'expérience ultime entre forêt primaire et océan Atlantique.</p>
+        <button class="btn" onclick="location.href='#account'">Commencer l'Aventure</button>
+    </header>
+
+    <section id="legal" class="legal-hunting">
+        <h2>Assistance Légale & Port d'Arme</h2>
+        <p>Pour nos chasseurs internationaux, nous gérons l'intégralité du processus administratif :</p>
+        <ul>
+            <li>Obtention du <strong>Permis de Grande Chasse</strong> auprès des Eaux et Forêts.</li>
+            <li>Formalités d'<strong>Introduction Temporaire d'Armes</strong> (3ème catégorie).</li>
+            <li>Dédouanement sécurisé à l'aéroport de Libreville (ADL).</li>
+            <li>Accompagnement par des guides certifiés dans des zones amodiées.</li>
+        </ul>
+    </section>
+
+    <section class="pricing">
+        <div class="card">
+            <span class="promo-tag">-10% Promo</span>
+            <h3>Standard</h3>
+            <p class="old-price">$11,111</p>
+            <p class="price">$10,000</p>
+            <p>Safari 7 jours - Loango</p>
+            <button class="btn">Réserver</button>
+        </div>
+        <div class="card" style="border: 2px solid var(--gold);">
+            <span class="promo-tag">-10% Promo</span>
+            <h3>Elite</h3>
+            <p class="old-price">$27,777</p>
+            <p class="price">$25,000</p>
+            <p>Chasse & Safari - 14 jours</p>
+            <button class="btn">Réserver</button>
+        </div>
+        <div class="card">
+            <span class="promo-tag">-10% Promo</span>
+            <h3>Royal</h3>
+            <p class="old-price">$55,555</p>
+            <p class="price">$50,000</p>
+            <p>Jet Privé & Expédition Totale</p>
+            <button class="btn">Réserver</button>
+        </div>
+    </section>
+
+    <section id="account" class="auth-container">
+        <h2>Créer un Compte Voyageur</h2>
+        <form id="registerForm">
+            <input type="text" id="username" placeholder="Nom complet" required><br>
+            <input type="email" id="email" placeholder="Email" required><br>
+            <input type="password" id="password" placeholder="Mot de passe" required><br>
+            <button type="submit" class="btn">S'enregistrer</button>
+        </form>
+        <div id="msg"></div>
+    </section>
+
+    <script>
+        const scriptURL = 'VOTRE_URL_GOOGLE_APP_SCRIPT';
+        const form = document.getElementById('registerForm');
+
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+            .then(response => document.getElementById('msg').innerHTML = "Succès ! Bienvenue au Gabon.")
+            .catch(error => console.error('Erreur !', error.message))
+        });
+    </script>
+</body>
+</html>
