@@ -139,18 +139,34 @@
                 <p style="text-align:center; font-size:0.75rem; margin-top:20px; color:#666;">Déjà inscrit ? <a href="#" onclick="toggleAuth()" style="color:var(--gold); text-decoration:none;">Se connecter</a></p>
             </div>
 
-            <div id="forgot-box" class="hidden">
-                <h2 style="font-family:'Playfair Display'; color:var(--gold); text-align:center; margin:0 0 30px 0;">Réinitialisation</h2>
-                <p style="font-size:0.75rem; color:#888; text-align:center; margin-bottom:20px;">Saisissez votre email pour recevoir un lien de récupération.</p>
-                <form id="forgotForm">
-                    <div class="form-group"><label>Votre Email</label><input type="email" id="f-email" required></div>
-                    <button type="submit" id="btn-f" class="btn-gold">
-                        <span id="ld-f" class="loader hidden"></span>
-                        <span id="txt-f">Envoyer le lien</span>
-                    </button>
-                </form>
-                <p style="text-align:center; font-size:0.75rem; margin-top:20px;"><a href="#" onclick="hideForgot()" style="color:var(--gold); text-decoration:none;">Retour à la connexion</a></p>
-            </div>
+        <div id="forgot-box" class="hidden">
+    <h2 style="font-family:'Playfair Display'; color:var(--gold); text-align:center; margin:0 0 30px 0;">Réinitialisation</h2>
+    
+    <div id="step-1">
+        <p style="font-size:0.75rem; color:#888; text-align:center; margin-bottom:20px;">Saisissez votre email pour recevoir un code de sécurité.</p>
+        <form id="forgotForm">
+            <div class="form-group"><label>Votre Email</label><input type="email" id="f-email" required></div>
+            <button type="submit" id="btn-f" class="btn-gold">
+                <span id="ld-f" class="loader hidden"></span>
+                <span id="txt-f">Envoyer le code</span>
+            </button>
+        </form>
+    </div>
+
+    <div id="step-2" class="hidden">
+        <p style="font-size:0.75rem; color:#888; text-align:center; margin-bottom:20px;">Entrez le code reçu et votre nouveau mot de passe.</p>
+        <form id="resetForm">
+            <div class="form-group"><label>Code (6 chiffres)</label><input type="text" id="r-code" required></div>
+            <div class="form-group"><label>Nouveau mot de passe</label><input type="password" id="r-pass" required></div>
+            <button type="submit" id="btn-r" class="btn-gold">
+                <span id="ld-r" class="loader hidden"></span>
+                <span id="txt-r">Mettre à jour</span>
+            </button>
+        </form>
+    </div>
+
+    <p style="text-align:center; font-size:0.75rem; margin-top:20px;"><a href="#" onclick="hideForgot()" style="color:var(--gold); text-decoration:none;">Retour à la connexion</a></p>
+</div>
 
             <p id="auth-msg" style="text-align:center; font-size:0.8rem; margin-top:15px;"></p>
         </div>
@@ -239,16 +255,7 @@
             document.getElementById('auth-msg').innerText = "";
         }
 
-        // --- GESTION FORGOT PASSWORD ---
-        function showForgot() {
-            document.getElementById('login-box').classList.add('hidden');
-            document.getElementById('forgot-box').classList.remove('hidden');
-            document.getElementById('auth-msg').innerText = "";
-        }
-        function hideForgot() {
-            document.getElementById('forgot-box').classList.add('hidden');
-            document.getElementById('login-box').classList.remove('hidden');
-        }
+    
 
         function setLoad(type, loading) {
             const btn = document.getElementById(`btn-${type}`);
@@ -293,18 +300,7 @@
             }).catch(err => { setLoad('s', false); alert("Erreur inscription."); });
         });
 
-        // --- FORGOT PASSWORD SUBMIT ---
-        document.getElementById('forgotForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            setLoad('f', true);
-            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "forgot", email: document.getElementById('f-email').value }) })
-            .then(r => r.json()).then(data => {
-                setLoad('f', false);
-                const msg = document.getElementById('auth-msg');
-                msg.innerText = data.message;
-                msg.style.color = data.result === "success" ? "var(--success)" : "var(--error)";
-            }).catch(err => { setLoad('f', false); alert("Erreur lors de l'envoi."); });
-        });
+  
 
         function showUI() {
             document.getElementById('auth-ui').classList.add('hidden');
@@ -342,6 +338,66 @@
         function accepterCookies() { sessionStorage.setItem('gb_cookies_accepted', 'true'); document.getElementById('cookie-banner').style.display = 'none'; }
         function logout() { localStorage.clear(); location.reload(); }
         window.onload = () => { verifierCookies(); if(localStorage.getItem('gb_logged') === 'true') showUI(); };
+
+
+
+      function showForgot() {
+    document.getElementById('login-box').classList.add('hidden');
+    document.getElementById('forgot-box').classList.remove('hidden');
+    document.getElementById('step-1').classList.remove('hidden');
+    document.getElementById('step-2').classList.add('hidden');
+    document.getElementById('auth-msg').innerText = "";
+}
+
+function hideForgot() {
+    document.getElementById('forgot-box').classList.add('hidden');
+    document.getElementById('login-box').classList.remove('hidden');
+}
+
+// ÉTAPE 1 : Demande de code
+document.getElementById('forgotForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    setLoad('f', true);
+    fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "forgot", email: document.getElementById('f-email').value }) })
+    .then(r => r.json()).then(data => {
+        setLoad('f', false);
+        const msg = document.getElementById('auth-msg');
+        msg.innerText = data.message;
+        msg.style.color = data.result === "success" ? "var(--success)" : "var(--error)";
+        if(data.result === "success") {
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-2').classList.remove('hidden');
+        }
+    }).catch(err => { setLoad('f', false); alert("Erreur de connexion."); });
+});
+
+// ÉTAPE 2 : Validation du code et changement de pass
+document.getElementById('resetForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-r');
+    btn.disabled = true;
+    document.getElementById('ld-r').classList.remove('hidden');
+
+    fetch(SCRIPT_URL, { 
+        method: 'POST', 
+        body: JSON.stringify({ 
+            action: "resetPassword", 
+            email: document.getElementById('f-email').value, 
+            code: document.getElementById('r-code').value,
+            newPass: document.getElementById('r-pass').value 
+        }) 
+    })
+    .then(r => r.json()).then(data => {
+        btn.disabled = false;
+        document.getElementById('ld-r').classList.add('hidden');
+        const msg = document.getElementById('auth-msg');
+        msg.innerText = data.message;
+        msg.style.color = data.result === "success" ? "var(--success)" : "var(--error)";
+        if(data.result === "success") setTimeout(() => location.reload(), 2000);
+    });
+});
+
+        
     </script>
 </body>
 </html>
