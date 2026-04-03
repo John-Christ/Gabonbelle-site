@@ -540,18 +540,17 @@
     window.addEventListener('load', verifierCookies);
 
 
-  // 2. FERMER LE MENU EN TOUCHANT L'EXTÉRIEUR
+// 2. Fermer si on clique en dehors du menu
     window.addEventListener('click', (e) => {
-        // Si le menu est ouvert ET que le clic n'est pas SUR le menu ni SUR le bouton
-        if (navMenu.classList.contains('active') && !navMenu.contains(e.target) && !hamburger.contains(e.target)) {
-            navMenu.classList.remove('active');
+        if (navList.classList.contains('active') && !navList.contains(e.target) && !mobileMenu.contains(e.target)) {
+            navList.classList.remove('active');
         }
     });
 
-    // 3. Fermer le menu dès qu'on clique sur un lien (Navigation fluide)
-    document.querySelectorAll('#nav-menu a').forEach(link => {
+    // 3. Fermer le menu lors du clic sur un lien de navigation
+    document.querySelectorAll('#nav-list a').forEach(link => {
         link.addEventListener('click', () => {
-            navMenu.classList.remove('active');
+            navList.classList.remove('active');
         });
     });
     
