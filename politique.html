@@ -59,14 +59,16 @@
   <footer>
 
 
-     <section id="delivery-solutions" style="background: #0a0a0a; padding: 60px 10%; text-align: center; border-top: 1px solid #1a1a1a;">
+   <section id="delivery-solutions" style="background: #0a0a0a; padding: 60px 10%; text-align: center; border-top: 1px solid #1a1a1a;">
     <h2 style="font-family: 'Playfair Display', serif; color: var(--gold); font-size: 2rem; margin-bottom: 40px;">Nos Solutions de Livraison</h2>
     
     <div class="delivery-grid" style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;">
         
         <div class="delivery-item">
             <div class="delivery-img-container">
-                <img src="https://cdn-icons-png.flaticon.com/512/709/709790.png" alt="Livraison Express">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="icon-svg">
+                    <path d="M13 18l5-11-7 1 1-5-5 11 7-1-1 5z" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
             </div>
             <h3>DHL Express Libreville</h3>
             <p>Remise en main propre sous 24h dans la capitale gabonaise par nos coursiers privés.</p>
@@ -74,7 +76,9 @@
 
         <div class="delivery-item">
             <div class="delivery-img-container">
-                <img src="https://cdn-icons-png.flaticon.com/512/2853/2853330.png" alt="Expédition Internationale">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="icon-svg">
+                    <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+                </svg>
             </div>
             <h3>FedEx Sécurité Diplomatique</h3>
             <p>Expédition mondiale assurée via valise diplomatique ou transporteur haute sécurité.</p>
@@ -82,10 +86,12 @@
 
         <div class="delivery-item">
             <div class="delivery-img-container">
-                <img src="https://cdn-icons-png.flaticon.com/512/2555/2555013.png" alt="Transport Spécialisé">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="icon-svg">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
             </div>
             <h3>UPS Convoi Privé</h3>
-            <p>Logistique sur mesure pour le transport d'ivoire végétal, masques précieux et équipements de chasse.</p>
+            <p>Logistique sur mesure pour le transport d'ivoire végétal et masques précieux.</p>
         </div>
 
     </div>
@@ -93,24 +99,24 @@
     <style>
         .delivery-grid { max-width: 1200px; margin: 0 auto; }
         .delivery-item { flex: 1; min-width: 250px; max-width: 320px; padding: 20px; }
+        
         .delivery-img-container {
             width: 80px; height: 80px; margin: 0 auto 20px;
             border-radius: 50%; border: 1px solid var(--gold);
-            padding: 20px; display: flex; align-items: center; justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             background: rgba(212, 175, 55, 0.05); transition: 0.4s;
+            color: var(--white); /* Couleur initiale des icônes */
         }
+
+        .icon-svg { width: 35px; height: 35px; transition: 0.3s; }
+
         .delivery-item:hover .delivery-img-container {
-            background: var(--gold); transform: scale(1.1);
+            background: var(--gold);
+            color: #000; /* L'icône devient noire sur fond gold */
+            transform: scale(1.1);
             box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
         }
-        .delivery-img-container img {
-            width: 100%; height: auto;
-            filter: brightness(0) invert(1); /* Rend les icônes blanches */
-            transition: 0.3s;
-        }
-        .delivery-item:hover img {
-            filter: brightness(0); /* Devient noir au survol du bouton Gold */
-        }
+
         .delivery-item h3 { font-family: 'Playfair Display', serif; color: var(--white); font-size: 1.3rem; margin-bottom: 15px; }
         .delivery-item p { color: #888; font-size: 0.9rem; line-height: 1.6; }
     </style>
