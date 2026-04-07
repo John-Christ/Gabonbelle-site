@@ -564,6 +564,15 @@
                 btn.disabled = false;
             });
         }  */
+
+        document.querySelectorAll('#nav-menu a').forEach(link => {
+    link.addEventListener('click', (e) => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'instant' // Utilise 'smooth' pour un effet de glissement
+        });
+    });
+});
     </script>
 </body>
 </html>
