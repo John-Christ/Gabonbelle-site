@@ -633,7 +633,21 @@ document.getElementById('resetForm').addEventListener('submit', function(e) {
         link.addEventListener('click', () => {
             navMenu.classList.remove('active');
         });
-    });     
+    });  
+
+
+        // Force le retour en haut de page lors de la navigation
+document.querySelectorAll('#nav-menu a').forEach(link => {
+    link.addEventListener('click', () => {
+        // On remonte tout en haut instantanément
+        window.scrollTo(0, 0);
+    });
+});
+
+// Sécurité supplémentaire : Force le haut de page au chargement
+window.onbeforeunload = function () {
+    window.scrollTo(0, 0);
+};
     </script>
 </body>
 </html>
