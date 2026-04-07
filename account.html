@@ -628,6 +628,10 @@ document.getElementById('resetForm').addEventListener('submit', function(e) {
         }
     });
 
+
+
+
+        
     // 3. Fermer le menu dès qu'on clique sur un lien (Navigation fluide)
     document.querySelectorAll('#nav-menu a').forEach(link => {
         link.addEventListener('click', () => {
@@ -635,19 +639,16 @@ document.getElementById('resetForm').addEventListener('submit', function(e) {
         });
     });  
 
-
-        // Force le retour en haut de page lors de la navigation
 document.querySelectorAll('#nav-menu a').forEach(link => {
-    link.addEventListener('click', () => {
-        // On remonte tout en haut instantanément
-        window.scrollTo(0, 0);
+    link.addEventListener('click', (e) => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'instant' // Utilise 'smooth' pour un effet de glissement
+        });
     });
 });
 
-// Sécurité supplémentaire : Force le haut de page au chargement
-window.onbeforeunload = function () {
-    window.scrollTo(0, 0);
-};
+        
     </script>
 </body>
 </html>
