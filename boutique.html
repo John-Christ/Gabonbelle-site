@@ -553,12 +553,20 @@
         }
     });
 
-    // 3. Fermer le menu lors du clic sur un lien de navigation
-    document.querySelectorAll('#nav-list a').forEach(link => {
-        link.addEventListener('click', () => {
-            navList.classList.remove('active');
-        });
+    
+
+// Force le retour en haut de page lors de la navigation
+document.querySelectorAll('#nav-menu a').forEach(link => {
+    link.addEventListener('click', () => {
+        // On remonte tout en haut instantanément
+        window.scrollTo(0, 0);
     });
+});
+
+// Sécurité supplémentaire : Force le haut de page au chargement
+window.onbeforeunload = function () {
+    window.scrollTo(0, 0);
+};
     
 </script>
 
