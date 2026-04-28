@@ -117,5 +117,24 @@
             </div>
     </main>
 
+    
+<script>
+   function previewImages() {
+    const preview = document.getElementById('preview');
+    const files = document.getElementById('fileInput').files;
+    preview.innerHTML = ''; // Reset
+
+    Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'w-20 h-20 object-cover rounded-lg shadow-sm border border-gray-200';
+            preview.appendChild(img);
+        }
+        reader.readAsDataURL(file);
+    });
+} 
+</script>
 </body>
 </html>
