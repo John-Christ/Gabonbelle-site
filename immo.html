@@ -135,6 +135,51 @@
         reader.readAsDataURL(file);
     });
 } 
+
+
+
+    document.getElementById('propertyForm').onsubmit = function(e) {
+  e.preventDefault();
+  
+  const submitBtn = e.target.querySelector('button');
+  submitBtn.disabled = true;
+  submitBtn.innerText = "Traitement en cours...";
+
+  // Conversion des images en Base64 pour le transfert
+  const files = document.getElementById('fileInput').files;
+  const promises = Array.from(files).map(file => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve({
+        data: e.target.result.split(',')[1],
+        type: file.type,
+        name: file.name
+      });
+      reader.readAsDataURL(file);
+    });
+  });
+
+  Promise.all(promises).then(encodedFiles => {
+    const data = {
+      type: document.getElementById('type').value,
+      price: document.getElementById('price').value,
+      title: document.getElementById('title').value,
+      location: document.getElementById('location').value,
+      premium: document.getElementById('premiumBadge').checked,
+      email: "johnchristbouma@gmail.com", // Récupéré dynamiquement après
+      files: encodedFiles
+    };
+
+    google.script.run
+      .withSuccessHandler(res => {
+        alert("Félicitations ! Votre bien est en cours de validation.");
+        if(data.premium) {
+           window.location.href = "https://gabonbelle.com/immo"; 
+        }
+      })
+      .processForm(data);
+  });
+};
 </script>
 </body>
 </html>
