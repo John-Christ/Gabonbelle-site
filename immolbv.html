@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gabonbelle Immobilier | Plateforme Leader au Gabon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .gold-gradient { background: linear-gradient(135deg, #d4af37 0%, #f9e27d 100%); }
+        .blue-verify { color: #1DA1F2; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .tab-active { border-bottom: 3px solid #d4af37; color: #d4af37; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-900">
+
+    <!-- Navigation -->
+    <nav class="bg-slate-900 text-white p-4 shadow-2xl sticky top-0 z-50 border-b border-yellow-600/30">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <h1 class="text-2xl font-black tracking-tighter cursor-pointer" onclick="showSection('home')">
+                    GABONBELLE <span class="text-yellow-500 italic text-3xl">IMMO</span>
+                </h1>
+            </div>
+            <div class="hidden md:flex space-x-8 font-medium">
+                <a href="javascript:void(0)" onclick="showSection('home')" class="hover:text-yellow-500 transition">Explorer</a>
+                <a href="#projets" class="hover:text-yellow-500 transition">Conseils Immo</a>
+                <a href="javascript:void(0)" onclick="showSection('dashboard')" class="hover:text-yellow-500 flex items-center">
+                    <i class="fas fa-user-circle mr-2"></i> Mon Compte
+                </a>
+            </div>
+            <button onclick="showSection('post-property')" class="gold-gradient text-slate-900 px-6 py-2 rounded-full font-bold shadow-lg hover:scale-105 transition transform">
+                PUBLIER (+5)
+            </button>
+        </div>
+    </nav>
+
+    <!-- AdSense Placeholder Top -->
+    <div class="container mx-auto mt-4 text-center">
+        <div class="bg-gray-200 py-2 text-[10px] uppercase tracking-widest text-gray-500">Espace Publicitaire</div>
+        <!-- <ins class="adsbygoogle" ... ></ins> -->
+    </div>
+
+    <!-- MAIN SECTIONS -->
+    <main id="main-content">
+        
+        <!-- SECTION ACCUEIL -->
+        <section id="home-section" class="py-8">
+            <!-- Hero & Recherche -->
+            <header class="bg-slate-900 text-white py-20 px-4 text-center rounded-b-[3rem] shadow-2xl mb-12">
+                <h2 class="text-5xl font-extrabold mb-6">Trouvez l'excellence immobilière au Gabon</h2>
+                <p class="text-gray-400 mb-10 max-w-3xl mx-auto text-lg italic">
+                    Accédez à des propriétés vérifiées à Libreville, Akanda et Port-Gentil. 
+                    Investissez en toute sécurité avec notre garantie de certification.
+                </p>
+                
+                <!-- Filtre Avancé -->
+                <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-4 text-slate-800">
+                    <select id="filter-type" class="p-3 border rounded-lg outline-none focus:ring-2 focus:ring-yellow-500">
+                        <option value="">Type d'offre</option>
+                        <option>Location</option>
+                        <option>Vente</option>
+                        <option>Terrain</option>
+                    </select>
+                    <input type="text" placeholder="Quartier (ex: Sablière)" class="p-3 border rounded-lg outline-none">
+                    <input type="number" placeholder="Budget Max (FCFA)" class="p-3 border rounded-lg outline-none">
+                    <button class="bg-slate-900 text-white rounded-lg font-bold hover:bg-black transition">
+                        <i class="fas fa-search mr-2"></i> Filtrer
+                    </button>
+                </div>
+            </header>
+
+            <div class="container mx-auto px-4">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-3xl font-bold">Biens en Vedette</h3>
+                    <div class="flex space-x-2">
+                        <span class="bg-white px-4 py-1 rounded-full shadow-sm text-sm font-semibold border border-yellow-500">Vérifié Only</span>
+                    </div>
+                </div>
+
+                <!-- Catalogue (Exemple de Carte riche) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                    <!-- Carte 1 -->
+                    <div class="bg-white rounded-3xl shadow-xl overflow-hidden group hover:-translate-y-2 transition-all duration-300">
+                        <div class="relative h-64">
+                            <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover">
+                            <div class="absolute top-4 left-4 bg-yellow-500 text-slate-900 px-3 py-1 rounded-full font-black text-xs">PREMIUM</div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="text-xl font-bold">Appartement Grand Standing</h4>
+                                <i class="fas fa-check-circle blue-verify text-xl" title="Vendeur Certifié"></i>
+                            </div>
+                            <p class="text-gray-500 text-sm mb-4"><i class="fas fa-map-marker-alt text-red-500 mr-2"></i>Akanda, Angondjé</p>
+                            <div class="flex space-x-4 mb-6 text-gray-600 text-sm italic">
+                                <span><i class="fas fa-bed mr-1"></i> 3 Ch</span>
+                                <span><i class="fas fa-bath mr-1"></i> 2 SdB</span>
+                                <span><i class="fas fa-expand mr-1"></i> 120m²</span>
+                            </div>
+                            <div class="flex justify-between items-center border-t pt-4">
+                                <span class="text-2xl font-black text-slate-900">800.000 <small>FCFA/mois</small></span>
+                                <button class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold">Détails</button>
+                            </div>
+                            <!-- Contact Logic -->
+                            <div class="mt-4 p-3 bg-blue-50 rounded-lg text-center">
+                                <p class="text-xs font-bold text-blue-800"><i class="fas fa-phone mr-2"></i> +241 077 XX XX XX (Visible car certifié)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenu Texte SEO pour AdSense -->
+            <section class="container mx-auto px-4 mt-20 bg-white p-10 rounded-3xl shadow-lg border border-gray-100">
+                <h3 class="text-2xl font-black mb-6 border-b pb-4">Pourquoi Choisir Gabonbelle Immo ?</h3>
+                <div class="grid md:grid-cols-2 gap-8 text-gray-600 leading-relaxed">
+                    <p>
+                        Notre plateforme révolutionne l'immobilier au Gabon en connectant acheteurs et vendeurs via un système de vérification rigoureux. Que vous cherchiez un terrain titré à Ntoum ou une villa de luxe à la Sablière, nous assurons une visibilité maximale grâce à nos partenariats locaux.
+                    </p>
+                    <p>
+                        La <strong>Certification Blue</strong> permet aux propriétaires de gagner la confiance des clients en affichant directement leurs contacts et en bénéficiant d'un boost algorithmique. Plus de 90% des visites payantes aboutissent à une signature.
+                    </p>
+                </div>
+            </section>
+        </section>
+
+        <!-- SECTION DASHBOARD -->
+        <section id="dashboard-section" class="container mx-auto px-4 py-12 hidden">
+            <div class="flex flex-col md:flex-row gap-8">
+                <!-- Sidebar Dashboard -->
+                <aside class="w-full md:w-1/4 bg-white rounded-3xl shadow-xl p-6 h-fit border border-gray-200">
+                    <div class="text-center mb-8">
+                        <div class="w-24 h-24 bg-slate-200 rounded-full mx-auto mb-4 flex items-center justify-center relative">
+                            <i class="fas fa-user text-4xl text-slate-400"></i>
+                            <span class="absolute bottom-0 right-0 bg-blue-500 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center">
+                                <i class="fas fa-check text-[10px] text-white"></i>
+                            </span>
+                        </div>
+                        <h4 class="font-bold text-lg">John Christ Bouma</h4>
+                        <p class="text-xs text-blue-600 font-bold uppercase">Membre Certifié Blue</p>
+                    </div>
+                    <nav class="space-y-4">
+                        <button onclick="switchTab('stat')" class="w-full text-left p-3 rounded-xl hover:bg-slate-100 font-bold"><i class="fas fa-chart-line mr-3"></i> Activités</button>
+                        <button onclick="switchTab('ads')" class="w-full text-left p-3 rounded-xl hover:bg-slate-100 font-bold"><i class="fas fa-home mr-3"></i> Mes Annonces</button>
+                        <button onclick="switchTab('pay')" class="w-full text-left p-3 rounded-xl hover:bg-slate-100 font-bold"><i class="fas fa-wallet mr-3"></i> Paiements & Stats</button>
+                        <button class="w-full text-left p-3 rounded-xl hover:bg-red-50 text-red-500 font-bold border-t mt-4"><i class="fas fa-sign-out-alt mr-3"></i> Déconnexion</button>
+                    </nav>
+                </aside>
+
+                <!-- Content Dashboard -->
+                <div class="flex-1 space-y-6">
+                    <div id="tab-stat" class="bg-white rounded-3xl shadow-xl p-8 border border-gray-200">
+                        <h3 class="text-2xl font-bold mb-6">Résumé du Compte</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                            <div class="p-6 bg-slate-50 rounded-2xl border">
+                                <p class="text-gray-500 text-sm uppercase font-bold">Vues Annonces</p>
+                                <p class="text-3xl font-black">1,250</p>
+                            </div>
+                            <div class="p-6 bg-green-50 rounded-2xl border border-green-100">
+                                <p class="text-gray-500 text-sm uppercase font-bold">Commissions</p>
+                                <p class="text-3xl font-black text-green-600">45k FCFA</p>
+                            </div>
+                            <div class="p-6 bg-blue-50 rounded-2xl border border-blue-100">
+                                <p class="text-gray-500 text-sm uppercase font-bold">Statut</p>
+                                <p class="text-xl font-black text-blue-600 italic">VÉRIFIÉ</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-pay" class="bg-white rounded-3xl shadow-xl p-8 border border-gray-200">
+                        <h3 class="text-2xl font-bold mb-6 italic text-yellow-600"><i class="fas fa-crown mr-2"></i> Services Premium & Paiement</h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="border p-6 rounded-2xl">
+                                <h5 class="font-bold mb-2">Certification Blue (Mensuel)</h5>
+                                <p class="text-sm text-gray-500 mb-4 italic">Affiche votre numéro et valide votre identité.</p>
+                                <p class="text-xl font-bold mb-4">25.000 FCFA</p>
+                                <input type="text" placeholder="ID Transaction Airtel Money" class="w-full p-2 border rounded mb-2 text-sm">
+                                <button class="w-full gold-gradient p-2 rounded font-bold text-sm">Activer via ID</button>
+                            </div>
+                            <div class="border p-6 rounded-2xl">
+                                <h5 class="font-bold mb-2">Mise en avant (Boost 7j)</h5>
+                                <p class="text-sm text-gray-500 mb-4 italic">Votre annonce apparaît en haut de page.</p>
+                                <p class="text-xl font-bold mb-4">10.000 FCFA</p>
+                                <input type="text" placeholder="ID Transaction Airtel Money" class="w-full p-2 border rounded mb-2 text-sm">
+                                <button class="w-full bg-slate-900 text-white p-2 rounded font-bold text-sm">Booster l'annonce</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION PUBLICATION -->
+        <section id="post-property-section" class="container mx-auto px-4 py-12 hidden">
+            <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl p-10 border border-gray-100">
+                <div class="text-center mb-10">
+                    <h2 class="text-4xl font-black text-slate-900 mb-2">Générez votre annonce</h2>
+                    <p class="text-gray-500 italic">Prenez 5 photos claires pour attirer les acheteurs sérieux.</p>
+                </div>
+
+                <form id="propertyForm" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block font-bold mb-2">Type d'offre</label>
+                            <select id="type" class="w-full p-4 bg-slate-50 border-0 rounded-2xl ring-1 ring-gray-200 focus:ring-2 focus:ring-yellow-500 outline-none transition">
+                                <option value="location">Location Prestige</option>
+                                <option value="vente">Vente Directe</option>
+                                <option value="commission">Vente sous Commission</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold mb-2">Titre de l'annonce</label>
+                            <input type="text" id="title" placeholder="Ex: Villa Vue Mer Akanda" class="w-full p-4 bg-slate-50 border-0 rounded-2xl ring-1 ring-gray-200 outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-bold mb-2">Prix (FCFA)</label>
+                            <input type="number" id="price" class="w-full p-4 bg-slate-50 border-0 rounded-2xl ring-1 ring-gray-200 outline-none">
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <label class="block font-bold">Photos du bien (Max 5)</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-3xl p-10 text-center hover:border-yellow-500 transition-all cursor-pointer bg-slate-50" onclick="document.getElementById('fileInput').click()">
+                            <i class="fas fa-images text-4xl text-gray-400 mb-4"></i>
+                            <p class="text-sm text-gray-500 font-medium">Glissez-déposez ou cliquez ici</p>
+                            <input type="file" id="fileInput" multiple accept="image/*" class="hidden" onchange="handleFiles(this.files)">
+                        </div>
+                        <div id="preview" class="flex flex-wrap gap-3 justify-center"></div>
+                    </div>
+
+                    <div class="md:col-span-2 bg-yellow-50 p-6 rounded-2xl border border-yellow-200 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-shield-alt text-yellow-600 text-3xl mr-4"></i>
+                            <div>
+                                <p class="font-black text-yellow-900">Activer le Boost Premium ?</p>
+                                <p class="text-xs text-yellow-700 italic">Visibilité Prioritaire pendant 30 jours</p>
+                            </div>
+                        </div>
+                        <input type="checkbox" id="premiumBadge" class="w-8 h-8 accent-yellow-600">
+                    </div>
+
+                    <button type="submit" class="md:col-span-2 w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-xl hover:shadow-2xl transform active:scale-95 transition shadow-lg">
+                        PUBLIER SUR GABONBELLE IMMO
+                    </button>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer SEO -->
+    <footer class="bg-slate-900 text-gray-400 py-16 mt-20 border-t border-yellow-600/20">
+        <div class="container mx-auto px-4 grid md:grid-cols-3 gap-12 text-sm">
+            <div>
+                <h4 class="text-white font-bold text-lg mb-6 uppercase tracking-widest">Gabonbelle Immo</h4>
+                <p class="leading-relaxed">Leader de la transaction immobilière digitale au Gabon. Notre mission est de sécuriser chaque vente et chaque location grâce à la technologie.</p>
+            </div>
+            <div>
+                <h4 class="text-white font-bold text-lg mb-6 uppercase tracking-widest">Informations</h4>
+                <ul class="space-y-4">
+                    <li><a href="#" class="hover:text-yellow-500 transition">Conditions Générales (Ventes)</a></li>
+                    <li><a href="#" class="hover:text-yellow-500 transition">Politique de Confidentialité AdSense</a></li>
+                    <li><a href="#" class="hover:text-yellow-500 transition">Tarifs des Commissions</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-bold text-lg mb-6 uppercase tracking-widest">Newsletter</h4>
+                <p class="mb-4 italic italic text-xs">Recevez les meilleures opportunités titrées chaque matin.</p>
+                <div class="flex">
+                    <input type="email" placeholder="Votre email" class="bg-slate-800 p-3 rounded-l-lg outline-none w-full border-0 focus:ring-1 focus:ring-yellow-500">
+                    <button class="bg-yellow-600 text-slate-900 px-4 rounded-r-lg font-bold">OK</button>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-12 pt-8 border-t border-slate-800 text-[10px] uppercase">
+            © 2026 GABONBELLE BY BOYO LIFESTYLE (PTY) LTD - TOUS DROITS RÉSERVÉS.
+        </div>
+    </footer>
+
+    <script>
+        // Gestion de la Navigation SPA
+        function showSection(sectionId) {
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById(sectionId + '-section').classList.remove('hidden');
+            window.scrollTo(0,0);
+        }
+
+        // Gestion Tabs Dashboard
+        function switchTab(tabName) {
+            ['stat', 'ads', 'pay'].forEach(t => {
+                document.getElementById('tab-' + t).classList.add('hidden');
+            });
+            document.getElementById('tab-' + tabName).classList.remove('hidden');
+        }
+
+        // Gestion Photos (Limite à 5)
+        function handleFiles(files) {
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '';
+            const maxFiles = Math.min(files.length, 5);
+            
+            for(let i=0; i < maxFiles; i++) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const div = document.createElement('div');
+                    div.className = "relative w-20 h-20 shadow-md rounded-lg overflow-hidden border-2 border-white";
+                    div.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+                    preview.appendChild(div);
+                }
+                reader.readAsDataURL(files[i]);
+            }
+        }
+
+        // Envoi Apps Script
+        document.getElementById('propertyForm').onsubmit = function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Vérification...';
+            btn.disabled = true;
+
+            // Logique de capture data...
+            setTimeout(() => {
+                alert("Annonce envoyée à l'équipe de modération. Vous recevrez une notification après validation du paiement Airtel.");
+                showSection('dashboard');
+                btn.innerHTML = 'PUBLIER SUR GABONBELLE IMMO';
+                btn.disabled = false;
+            }, 2000);
+        };
+    </script>
+</body>
+</html>
