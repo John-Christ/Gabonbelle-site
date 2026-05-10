@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gabonbelle Immobilier | Investissement & Prestige</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .gold-gradient { background: linear-gradient(135deg, #d4af37 0%, #f9e27d 100%); }
+        .blue-verify { color: #1DA1F2; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .hidden { display: none; }
+        .property-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .property-card:hover { transform: translateY(-10px); }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-900">
+
+    <!-- Navigation -->
+    <nav class="bg-slate-900 text-white p-4 shadow-2xl sticky top-0 z-50 border-b border-yellow-600/30">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-black tracking-tighter cursor-pointer" onclick="showSection('home')">
+                GABONBELLE <span class="text-yellow-500 italic text-3xl">IMMO</span>
+            </h1>
+            <div class="hidden md:flex space-x-8 font-medium">
+                <a href="javascript:void(0)" onclick="filterQuick('Vente')" class="hover:text-yellow-500 transition">Acheter</a>
+                <a href="javascript:void(0)" onclick="filterQuick('Location')" class="hover:text-yellow-500 transition">Louer</a>
+                <a href="javascript:void(0)" onclick="filterQuick('Terrain')" class="hover:text-yellow-500 transition">Terrains</a>
+                <a href="javascript:void(0)" onclick="showSection('dashboard')" class="hover:text-yellow-500 flex items-center">
+                    <i class="fas fa-user-circle mr-2"></i> Mon Compte
+                </a>
+            </div>
+            <button onclick="showSection('post-property')" class="gold-gradient text-slate-900 px-6 py-2 rounded-full font-bold shadow-lg hover:scale-105 transition transform">
+                POSTER UNE ANNONCE
+            </button>
+        </div>
+    </nav>
+
+    <main id="main-content">
+        
+        <!-- SECTION ACCUEIL -->
+        <section id="home-section" class="py-8">
+            <header class="bg-slate-900 text-white py-16 px-4 text-center rounded-b-[3rem] shadow-2xl mb-12">
+                <h2 class="text-4xl md:text-5xl font-extrabold mb-6">L'Excellence Immobilière au Gabon</h2>
+                
+                <!-- Filtre Avancé Amélioré -->
+                <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-4 text-slate-800 mt-10">
+                    <select id="filter-type" class="p-3 border rounded-lg outline-none focus:ring-2 focus:ring-yellow-500" onchange="toggleSubCat()">
+                        <option value="">Type d'offre</option>
+                        <option value="Location">Location</option>
+                        <option value="Vente">Vente</option>
+                        <option value="Terrain">Terrain</option>
+                    </select>
+                    
+                    <select id="filter-subcat" class="p-3 border rounded-lg outline-none focus:ring-2 focus:ring-yellow-500">
+                        <option value="">Catégorie</option>
+                        <option value="Chambre">Chambre</option>
+                        <option value="Appartement">Appartement</option>
+                        <option value="Maison">Maison / Villa</option>
+                    </select>
+
+                    <select id="filter-ville" class="p-3 border rounded-lg outline-none focus:ring-2 focus:ring-yellow-500">
+                        <option value="">Ville</option>
+                        <option value="Libreville">Libreville</option>
+                        <option value="Akanda">Akanda</option>
+                        <option value="Port-Gentil">Port-Gentil</option>
+                        <option value="Ntoum">Ntoum</option>
+                    </select>
+
+                    <input type="date" id="filter-date" class="p-3 border rounded-lg outline-none focus:ring-2 focus:ring-yellow-500">
+
+                    <button onclick="applyFilters()" class="bg-slate-900 text-white rounded-lg font-bold hover:bg-black transition">
+                        <i class="fas fa-search mr-2"></i> Rechercher
+                    </button>
+                </div>
+            </header>
+
+            <div class="container mx-auto px-4">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 id="catalogue-title" class="text-3xl font-bold italic">Dernières Opportunités</h3>
+                </div>
+
+                <!-- Catalogue Dynamique -->
+                <div id="property-grid" class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                    <!-- Les propriétés virtuelles seront injectées ici par JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION DASHBOARD -->
+        <section id="dashboard-section" class="container mx-auto px-4 py-12 hidden">
+            <div class="flex flex-col md:flex-row gap-8">
+                <aside class="w-full md:w-1/4 bg-white rounded-3xl shadow-xl p-6 h-fit border border-gray-200">
+                    <div class="text-center mb-8">
+                        <div class="w-24 h-24 bg-slate-200 rounded-full mx-auto mb-4 flex items-center justify-center relative">
+                            <i class="fas fa-user text-4xl text-slate-400"></i>
+                            <span id="user-badge" class="absolute bottom-0 right-0 bg-blue-500 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center">
+                                <i class="fas fa-check text-[10px] text-white"></i>
+                            </span>
+                        </div>
+                        <h4 class="font-bold text-lg">Espace Propriétaire</h4>
+                        <p class="text-xs text-blue-600 font-bold uppercase">Statut : Certifié Blue</p>
+                    </div>
+                    <nav class="space-y-4">
+                        <button class="w-full text-left p-3 rounded-xl hover:bg-slate-100 font-bold"><i class="fas fa-chart-line mr-3"></i> Mes Activités</button>
+                        <button class="w-full text-left p-3 rounded-xl hover:bg-slate-100 font-bold"><i class="fas fa-address-card mr-3"></i> Infos Personnelles</button>
+                        <button class="w-full text-left p-3 rounded-xl hover:bg-red-50 text-red-500 font-bold border-t mt-4" onclick="showSection('home')"><i class="fas fa-sign-out-alt mr-3"></i> Déconnexion</button>
+                    </nav>
+                </aside>
+
+                <div class="flex-1 space-y-6">
+                    <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-200">
+                        <h3 class="text-2xl font-bold mb-6 italic text-yellow-600">Paiement Services Premium</h3>
+                        <div class="p-6 bg-slate-50 rounded-2xl border mb-6">
+                            <p class="font-bold mb-4">Activer le Badge Blue ou "Shine Up" (Mise en avant)</p>
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <input type="text" id="airtel-id" placeholder="ID Transaction Airtel Money" class="flex-1 p-4 border rounded-xl outline-none">
+                                <button class="bg-slate-900 text-white px-8 py-4 rounded-xl font-bold">Valider le Paiement</button>
+                            </div>
+                            <p class="text-[10px] text-gray-500 mt-2 uppercase tracking-widest">Le service sera activé après vérification de l'ID.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION PUBLICATION -->
+        <section id="post-property-section" class="container mx-auto px-4 py-12 hidden">
+            <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl p-10 border border-gray-100">
+                <h2 class="text-3xl font-black text-center mb-8">Déposer une Annonce</h2>
+                <form id="propertyForm" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <select id="post-type" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500" onchange="togglePostSubCat()">
+                            <option value="Vente">À Vendre</option>
+                            <option value="Location">À Louer</option>
+                            <option value="Terrain">Terrain</option>
+                        </select>
+                        
+                        <select id="post-cat" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                            <option value="Maison">Maison</option>
+                            <option value="Appartement">Appartement</option>
+                            <option value="Chambre">Chambre</option>
+                        </select>
+
+                        <select id="post-ville" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                            <option value="Libreville">Libreville</option>
+                            <option value="Akanda">Akanda</option>
+                            <option value="Port-Gentil">Port-Gentil</option>
+                            <option value="Ntoum">Ntoum</option>
+                        </select>
+
+                        <input type="text" id="post-title" placeholder="Titre de l'annonce" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                        <input type="number" id="post-price" placeholder="Prix (FCFA)" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="border-2 border-dashed border-gray-300 rounded-3xl p-8 text-center cursor-pointer bg-slate-50" onclick="document.getElementById('fileInput').click()">
+                            <i class="fas fa-camera text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-xs text-gray-500">Ajouter jusqu'à 5 photos</p>
+                            <input type="file" id="fileInput" multiple accept="image/*" class="hidden" onchange="handleFiles(this.files)">
+                        </div>
+                        <div id="preview" class="flex flex-wrap gap-2 justify-center"></div>
+                        
+                        <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-center justify-between">
+                            <span class="text-sm font-bold text-blue-800 italic">Devenir Partenaire Certifié (Badge Blue)</span>
+                            <input type="checkbox" id="post-premium" class="w-6 h-6 accent-blue-500">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="md:col-span-2 w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-xl hover:bg-black shadow-lg transition">
+                        GÉNÉRER L'ANNONCE
+                    </button>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-gray-400 py-12 mt-20 border-t border-yellow-600/20 text-center">
+        <p class="text-sm">© 2026 GABONBELLE IMMO - Expertise & Transparence</p>
+    </footer>
+
+    <script>
+        // Données Virtuelles (Base de données)
+        const virtualProperties = [
+            { id: 1, type: 'Vente', cat: 'Maison', ville: 'Libreville', price: 450000000, date: '2026-05-10', verified: true, img: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=500', title: 'Villa Sablière Prestige' },
+            { id: 2, type: 'Location', cat: 'Appartement', ville: 'Akanda', price: 600000, date: '2026-05-08', verified: true, img: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500', title: 'Appartement Moderne' },
+            { id: 3, type: 'Terrain', cat: 'Terrain', ville: 'Ntoum', price: 15000000, date: '2026-05-05', verified: false, img: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=500', title: 'Terrain Titré 1000m²' },
+            { id: 4, type: 'Location', cat: 'Chambre', ville: 'Libreville', price: 150000, date: '2026-05-09', verified: false, img: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=500', title: 'Chambre Meublée' },
+            { id: 5, type: 'Vente', cat: 'Maison', ville: 'Port-Gentil', price: 85000000, date: '2026-05-01', verified: true, img: 'https://images.unsplash.com/photo-1580587767513-3959eb609106?w=500', title: 'Maison Bas de Gué-Gué' },
+            { id: 6, type: 'Terrain', cat: 'Terrain', ville: 'Akanda', price: 25000000, date: '2026-05-07', verified: true, img: 'https://images.unsplash.com/photo-1599933310652-32111f925b44?w=500', title: 'Terrain Bord de Route' }
+        ];
+
+        // Affichage Initial
+        window.onload = () => { renderProperties(virtualProperties); };
+
+        function showSection(id) {
+            document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id + '-section').classList.remove('hidden');
+            window.scrollTo(0,0);
+        }
+
+        function renderProperties(data) {
+            const grid = document.getElementById('property-grid');
+            grid.innerHTML = '';
+            
+            if(data.length === 0) {
+                grid.innerHTML = '<div class="col-span-3 text-center py-20 text-gray-400 italic">Aucun bien ne correspond à votre recherche.</div>';
+                return;
+            }
+
+            data.forEach(p => {
+                const badge = p.verified ? '<i class="fas fa-check-circle blue-verify ml-2" title="Certifié"></i>' : '';
+                const contact = p.verified ? `<div class="mt-4 p-2 bg-blue-50 text-blue-800 text-xs font-bold rounded">CONTACT: +241 077 XX XX XX</div>` : `<div class="mt-4 p-2 bg-gray-100 text-gray-500 text-xs rounded">Vendeur non certifié</div>`;
+                
+                grid.innerHTML += `
+                    <div class="property-card bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 flex flex-col">
+                        <div class="relative h-56">
+                            <img src="${p.img}" class="w-full h-full object-cover">
+                            <span class="absolute top-4 left-4 bg-slate-900 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase">${p.type}</span>
+                            <span class="absolute top-4 right-4 bg-white/90 text-slate-800 text-[10px] px-3 py-1 rounded-full font-bold">${p.date}</span>
+                        </div>
+                        <div class="p-6 flex-1">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-lg">${p.title} ${badge}</h4>
+                            </div>
+                            <p class="text-gray-500 text-sm mb-4"><i class="fas fa-map-marker-alt text-red-500 mr-1"></i> ${p.ville} | ${p.cat}</p>
+                            <div class="text-2xl font-black text-slate-900 mb-4">${p.price.toLocaleString()} <small class="text-sm font-normal">FCFA</small></div>
+                            <button onclick="leaveMessage('${p.id}')" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-black transition">S'intéresser</button>
+                            ${contact}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function applyFilters() {
+            const type = document.getElementById('filter-type').value;
+            const subcat = document.getElementById('filter-subcat').value;
+            const ville = document.getElementById('filter-ville').value;
+            const date = document.getElementById('filter-date').value;
+
+            let filtered = virtualProperties.filter(p => {
+                return (!type || p.type === type) &&
+                       (!subcat || p.cat === subcat) &&
+                       (!ville || p.ville === ville) &&
+                       (!date || p.date === date);
+            });
+
+            document.getElementById('catalogue-title').innerText = type ? `Résultats : ${type}` : "Dernières Opportunités";
+            renderProperties(filtered);
+        }
+
+        function filterQuick(type) {
+            document.getElementById('filter-type').value = type;
+            applyFilters();
+            showSection('home');
+        }
+
+        function toggleSubCat() {
+            const type = document.getElementById('filter-type').value;
+            const sub = document.getElementById('filter-subcat');
+            if(type === 'Terrain') {
+                sub.innerHTML = '<option value="Terrain">Terrain</option>';
+            } else {
+                sub.innerHTML = '<option value="">Catégorie</option><option value="Chambre">Chambre</option><option value="Appartement">Appartement</option><option value="Maison">Maison</option>';
+            }
+        }
+
+        function togglePostSubCat() {
+            const type = document.getElementById('post-type').value;
+            const sub = document.getElementById('post-cat');
+            if(type === 'Terrain') {
+                sub.innerHTML = '<option value="Terrain">Terrain</option>';
+            } else {
+                sub.innerHTML = '<option value="Maison">Maison</option><option value="Appartement">Appartement</option><option value="Chambre">Chambre</option>';
+            }
+        }
+
+        function handleFiles(files) {
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '';
+            Array.from(files).slice(0, 5).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.innerHTML += `<img src="${e.target.result}" class="w-16 h-16 object-cover rounded-lg border shadow-sm">`;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function leaveMessage(id) {
+            const msg = prompt("Laissez un message au propriétaire de cette propriété :");
+            if(msg) alert("Votre message a été envoyé. Le propriétaire vous recontactera via la plateforme.");
+        }
+    </script>
+</body>
+</html>
