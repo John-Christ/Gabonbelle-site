@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gabonbelle Immobilier | Investissement & Prestige</title>
+    <meta name="description" content="Plateforme leader d'annonces immobilières au Gabon. Achetez, vendez ou louez des terrains, maisons et appartements à Libreville, Akanda et Port-Gentil.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .gold-gradient { background: linear-gradient(135deg, #d4af37 0%, #f9e27d 100%); }
+        .property-card { transition: all 0.4s ease; }
+        .property-card:hover { transform: translateY(-8px); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-900">
+
+    <nav class="bg-slate-900 text-white p-4 shadow-2xl sticky top-0 z-50 border-b border-yellow-600/30">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-black tracking-tighter cursor-pointer" onclick="showSection('home')">
+                GABONBELLE <span class="text-yellow-500 italic text-3xl">IMMO</span>
+            </h1>
+            <div class="hidden md:flex space-x-8 font-medium">
+                <button id="nav-auth-btn" onclick="openLoginModal()" class="hover:text-yellow-500 flex items-center">
+                    <i class="fas fa-user-circle mr-2"></i> Connexion
+                </button>
+            </div>
+            <button onclick="checkAuthAndPost()" class="gold-gradient text-slate-900 px-6 py-2 rounded-full font-bold shadow-lg hover:scale-105 transition transform">
+                POSTER UNE ANNONCE
+            </button>
+        </div>
+    </nav>
+
+    <div id="login-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full relative">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400"><i class="fas fa-times"></i></button>
+            
+            <div id="view-login">
+                <h3 class="text-2xl font-black mb-6 text-center">Accès Membre</h3>
+                <div class="space-y-4">
+                    <input type="email" id="login-email" placeholder="Email" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                    <input type="password" id="login-pass" placeholder="Mot de passe" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                    <button onclick="handleLogin()" id="btn-login-exec" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black">SE CONNECTER</button>
+                    <p class="text-center text-sm font-bold mt-4">Pas de compte ? <button onclick="toggleAuth('register')" class="text-yellow-600 underline">S'inscrire gratuitement</button></p>
+                </div>
+            </div>
+
+            <div id="view-register" class="hidden">
+                <h3 class="text-2xl font-black mb-6 text-center text-yellow-600">Rejoindre Gabonbelle</h3>
+                <div class="space-y-4">
+                    <input type="text" id="reg-name" placeholder="Nom Complet" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                    <input type="email" id="reg-email" placeholder="Email" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                    <input type="tel" id="reg-tel" placeholder="Téléphone (ex: 077...)" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                    <input type="password" id="reg-pass" placeholder="Mot de passe" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                    <button onclick="handleRegister()" id="btn-reg-exec" class="w-full gold-gradient text-slate-900 py-4 rounded-2xl font-black">CRÉER MON COMPTE</button>
+                    <p class="text-center text-sm font-bold mt-4">Déjà membre ? <button onclick="toggleAuth('login')" class="text-slate-900 underline">Se connecter</button></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "VOTRE_APP_SCRIPT_URL_DE_DEPLOIEMENT"; // À REMPLACER
+        let currentUser = JSON.parse(localStorage.getItem('gb_user')) || null;
+        let allProperties = [];
+
+        // --- BRIDGE API (FETCH) ---
+        async function callBackend(action, payload = {}) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action, payload }),
+                });
+                const result = await response.json();
+                if (result.status === 'error') throw result.message;
+                return result.data;
+            } catch (err) {
+                alert("Erreur API: " + err);
+                return null;
+            }
+        }
+
+        // --- AUTHENTIFICATION ---
+        function toggleAuth(mode) {
+            document.getElementById('view-login').classList.toggle('hidden', mode === 'register');
+            document.getElementById('view-register').classList.toggle('hidden', mode === 'login');
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            const btn = document.getElementById('btn-login-exec');
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>...';
+            const user = await callBackend('login', { email, pass });
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('gb_user', JSON.stringify(user));
+                updateUIForAuth();
+                closeLoginModal();
+            } else {
+                alert("Identifiants incorrects.");
+            }
+            btn.innerText = "SE CONNECTER";
+        }
+
+        async function handleRegister() {
+            const payload = {
+                name: document.getElementById('reg-name').value,
+                email: document.getElementById('reg-email').value,
+                phone: document.getElementById('reg-tel').value,
+                password: document.getElementById('reg-pass').value
+            };
+            const success = await callBackend('register', payload);
+            if (success) {
+                alert("Compte créé ! Veuillez vous connecter.");
+                toggleAuth('login');
+            }
+        }
+
+        // --- CHARGEMENT ---
+        async function loadProperties() {
+            const data = await callBackend('getAllProperties');
+            if (data) {
+                allProperties = data;
+                renderProperties(allProperties);
+            }
+        }
+
+        // --- UI HELPERS ---
+        function updateUIForAuth() {
+            if (!currentUser) return;
+            const authBtn = document.getElementById('nav-auth-btn');
+            authBtn.innerHTML = `<i class="fas fa-user-circle mr-2 text-yellow-500"></i> ${currentUser.name.split(' ')[0]}`;
+            authBtn.onclick = () => showSection('dashboard');
+            // ... (Mettez à jour les champs du dashboard ici) ...
+        }
+
+        // Initialisation
+        if (currentUser) updateUIForAuth();
+        loadProperties();
+    </script>
+</body>
+</html>
