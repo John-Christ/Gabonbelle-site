@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gabonbelle | Immobilier & Opportunités au Gabon</title>
+    <meta name="description" content="Trouvez les meilleures opportunités immobilières au Gabon : Terrains, Maisons et Appartements à Libreville, Akanda et Port-Gentil.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --gold: #d4af37; --blue-cert: #1DA1F2; }
+        .gold-gradient { background: linear-gradient(135deg, #d4af37 0%, #f9e27d 100%); }
+        .property-card:hover { transform: translateY(-5px); transition: 0.3s ease; }
+        .hidden { display: none; }
+        .modal-bg { background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+    <!-- Navigation -->
+    <nav class="bg-white border-b sticky top-0 z-50 py-4 shadow-sm">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <h1 class="text-2xl font-black tracking-tighter text-slate-900 cursor-pointer" onclick="location.reload()">
+                GABONBELLE<span class="text-yellow-600">.COM</span>
+            </h1>
+            <div class="hidden md:flex space-x-6 font-bold text-sm uppercase">
+                <a href="#" class="hover:text-yellow-600">Ventes</a>
+                <a href="#" class="hover:text-yellow-600">Locations</a>
+                <a href="#" class="hover:text-yellow-600">Terrains</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="auth-btn" onclick="openModal('login')" class="font-bold text-sm border-2 border-slate-900 px-5 py-2 rounded-full">CONNEXION</button>
+                <button onclick="checkAuthAndPost()" class="gold-gradient px-6 py-2 rounded-full font-black text-sm shadow-md">POSTER</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero & Search -->
+    <header class="bg-slate-900 text-white py-16 px-4 mb-10">
+        <div class="container mx-auto max-w-4xl text-center">
+            <h2 class="text-4xl font-black mb-6">Investissez dans l'Immobilier au Gabon</h2>
+            <div class="bg-white p-2 rounded-3xl shadow-2xl flex flex-wrap md:flex-nowrap gap-2 text-slate-800">
+                <select id="f-type" class="flex-1 p-4 bg-transparent outline-none font-bold">
+                    <option value="">Type de bien</option>
+                    <option value="Vente">À Vendre</option>
+                    <option value="Location">À Louer</option>
+                    <option value="Terrain">Terrains</option>
+                </select>
+                <select id="f-ville" class="flex-1 p-4 border-l outline-none">
+                    <option value="">Toutes les villes</option>
+                    <option value="Libreville">Libreville</option>
+                    <option value="Akanda">Akanda</option>
+                    <option value="Port-Gentil">Port-Gentil</option>
+                </select>
+                <button onclick="searchProperties()" class="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-black">Rechercher</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 min-h-screen">
+        
+        <div id="home-view">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h3 class="text-2xl font-black italic uppercase">Dernières Opportunités</h3>
+                    <p class="text-gray-500 text-sm">Mises à jour en temps réel au Gabon.</p>
+                </div>
+                <div class="flex space-x-2">
+                    <button id="btn-voir-tout" onclick="resetSearch()" class="hidden px-4 py-2 border rounded-full text-xs font-bold bg-white uppercase">Voir Tout</button>
+                    <button onclick="filterVerified()" class="px-4 py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded-full text-xs font-black uppercase">Vérifiés Seulement</button>
+                </div>
+            </div>
+
+            <div id="grid-properties" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+                <!-- Chargement dynamique -->
+                <div class="col-span-full text-center py-20 text-gray-400 italic">Chargement du catalogue...</div>
+            </div>
+
+            <!-- AdSense Content Filler Section -->
+            <section class="bg-white p-10 rounded-[3rem] mb-20 border border-gray-100">
+                <div class="max-w-2xl">
+                    <h4 class="text-xl font-black mb-4">Pourquoi choisir Gabonbelle ?</h4>
+                    <p class="text-gray-600 leading-relaxed mb-4">Gabonbelle est la plateforme leader pour l'achat, la vente et la location de biens immobiliers au Gabon. Nous vérifions l'identité des annonceurs pour vous garantir une expérience sécurisée. Que vous cherchiez un titre foncier à Akanda ou un studio à Libreville, notre algorithme trie pour vous le prestige et l'accessibilité.</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- Dashboard View (Hidden by default) -->
+        <div id="dash-view" class="hidden py-10">
+            <div class="bg-white rounded-[3rem] shadow-xl overflow-hidden border">
+                <div class="bg-slate-900 p-10 text-white flex justify-between items-center">
+                    <div>
+                        <h2 id="user-display-name" class="text-3xl font-black">Chargement...</h2>
+                        <span id="user-display-badge" class="px-3 py-1 bg-gray-700 rounded-full text-[10px] uppercase font-black">Membre Standard</span>
+                    </div>
+                    <button onclick="logout()" class="text-sm font-bold text-red-400">DÉCONNEXION</button>
+                </div>
+                
+                <div class="p-10">
+                    <div class="flex space-x-6 border-b mb-10 overflow-x-auto pb-4">
+                        <button onclick="switchTab('act')" class="font-black text-sm uppercase whitespace-nowrap">Activités</button>
+                        <button onclick="switchTab('ann')" class="font-black text-sm uppercase whitespace-nowrap">Mes Annonces</button>
+                        <button onclick="switchTab('pay')" class="font-black text-sm uppercase whitespace-nowrap">Paiements & Stats</button>
+                        <button onclick="switchTab('prof')" class="font-black text-sm uppercase whitespace-nowrap">Infos Personnelles</button>
+                    </div>
+
+                    <div id="tab-act" class="space-y-8">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="bg-slate-50 p-6 rounded-3xl border">
+                                <p class="text-[10px] font-black uppercase text-gray-400 mb-2">Vues Annonces</p>
+                                <p id="stat-v" class="text-3xl font-black italic">0</p>
+                            </div>
+                            <div class="bg-slate-50 p-6 rounded-3xl border">
+                                <p class="text-[10px] font-black uppercase text-gray-400 mb-2">Commissions</p>
+                                <p id="stat-c" class="text-3xl font-black italic">0 FCFA</p>
+                            </div>
+                            <div class="bg-slate-50 p-6 rounded-3xl border">
+                                <p class="text-[10px] font-black uppercase text-gray-400 mb-2">Statut</p>
+                                <p id="stat-s" class="text-3xl font-black italic uppercase">---</p>
+                            </div>
+                        </div>
+                        <div class="gold-gradient p-8 rounded-3xl text-slate-900">
+                            <h4 class="font-black text-lg mb-2 uppercase">Certification Blue (Mensuel)</h4>
+                            <p class="text-sm italic mb-6">Affiche votre numéro et valide votre identité.</p>
+                            <div class="flex flex-col md:flex-row gap-4 items-center">
+                                <span class="text-2xl font-black">25.000 FCFA</span>
+                                <input type="text" id="up-airtel" placeholder="ID Airtel Money" class="p-3 rounded-xl border-none outline-none">
+                                <button class="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold">Activer via ID</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Other tabs placeholders -->
+                    <div id="tab-ann" class="hidden italic text-gray-400 text-center py-10">Chargement de vos annonces...</div>
+                    <div id="tab-pay" class="hidden">...</div>
+                    <div id="tab-prof" class="hidden">...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODALS -->
+    <!-- Login Modal -->
+    <div id="modal-login" class="modal-bg fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-[2rem] w-full max-w-md">
+            <h3 class="text-2xl font-black mb-6 text-center">Connexion</h3>
+            <input type="email" id="l-email" placeholder="Email" class="w-full p-4 bg-slate-50 rounded-xl mb-4 border">
+            <input type="password" id="l-pass" placeholder="Mot de passe" class="w-full p-4 bg-slate-50 rounded-xl mb-6 border">
+            <button onclick="login()" id="l-btn" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black">SE CONNECTER</button>
+            <p class="mt-4 text-center text-sm font-bold">Pas de compte ? <button onclick="openModal('reg')" class="text-yellow-600 underline">Créer un compte</button></p>
+            <button onclick="closeModals()" class="w-full mt-4 text-gray-400 font-bold uppercase text-xs">Fermer</button>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="modal-reg" class="modal-bg fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-[2rem] w-full max-w-md">
+            <h3 class="text-2xl font-black mb-6 text-center">Inscription Membre</h3>
+            <input type="text" id="r-name" placeholder="Nom complet" class="w-full p-4 bg-slate-50 rounded-xl mb-4 border">
+            <input type="email" id="r-email" placeholder="Email" class="w-full p-4 bg-slate-50 rounded-xl mb-4 border">
+            <input type="tel" id="r-tel" placeholder="Téléphone" class="w-full p-4 bg-slate-50 rounded-xl mb-4 border">
+            <input type="password" id="r-pass" placeholder="Mot de passe" class="w-full p-4 bg-slate-50 rounded-xl mb-6 border">
+            <button onclick="register()" id="r-btn" class="w-full gold-gradient py-4 rounded-xl font-black">CRÉER MON COMPTE</button>
+            <button onclick="openModal('login')" class="w-full mt-4 text-gray-400 font-bold uppercase text-xs underline">J'ai déjà un compte</button>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t py-10 text-center">
+        <p class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Gabonbelle.com &copy; 2026 - Immobilier au Gabon</p>
+    </footer>
+
+    <script>
+        const API_URL = "VOTRE_APP_SCRIPT_WEBAPP_URL_ICI";
+        let user = JSON.parse(localStorage.getItem('gb_user')) || null;
+        let allProps = [];
+
+        // --- BACKEND BRIDGE ---
+        async function apiRequest(data) {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Attention: no-cors empêche la lecture de la réponse sur Apps Script si pas configuré. 
+                // Conseil: utilisez la méthode standard fetch et autorisez les headers CORS dans Apps Script.
+                body: JSON.stringify(data)
+            });
+            // Note pour John: Apps Script Web App nécessite souvent un redirect. 
+            // Pour GitHub, utilisez fetch avec redirect: 'follow'
+            return fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            }).then(res => res.json());
+        }
+
+        // --- AUTH ---
+        async function login() {
+            const email = document.getElementById('l-email').value;
+            const pass = document.getElementById('l-pass').value;
+            const res = await apiRequest({ action: 'login', email, password: pass });
+            if(res.status === 'success') {
+                user = res.data;
+                localStorage.setItem('gb_user', JSON.stringify(user));
+                location.reload();
+            } else alert(res.message);
+        }
+
+        async function register() {
+            const data = {
+                action: 'register',
+                email: document.getElementById('r-email').value,
+                password: document.getElementById('r-pass').value,
+                name: document.getElementById('r-name').value,
+                phone: document.getElementById('r-tel').value
+            };
+            const res = await apiRequest(data);
+            if(res.status === 'success') {
+                alert("Compte créé ! Connectez-vous.");
+                openModal('login');
+            } else alert(res.message);
+        }
+
+        function logout() {
+            localStorage.removeItem('gb_user');
+            location.reload();
+        }
+
+        // --- PROPERTIES ---
+        async function load() {
+            const res = await apiRequest({ action: 'getProperties' });
+            if(res.status === 'success') {
+                allProps = res.data;
+                render(allProps);
+            }
+        }
+
+        function render(data) {
+            const grid = document.getElementById('grid-properties');
+            grid.innerHTML = data.map(p => {
+                const isBlue = p.ownerStatus === "On";
+                return `
+                <div class="property-card bg-white rounded-[2rem] shadow-lg border overflow-hidden">
+                    <img src="${p.img}" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-black text-lg">${p.title}</h4>
+                            ${isBlue ? '<i class="fas fa-certificate text-blue-500"></i>' : ''}
+                        </div>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase mb-4">${p.ownerName} • ${p.date}</p>
+                        <p class="text-xl font-black text-slate-900 mb-4">${Number(p.price).toLocaleString()} FCFA</p>
+                        <button onclick="interested('${p.id}')" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-black">S'INTÉRESSER</button>
+                        ${isBlue ? `<div class="mt-2 text-center text-xs font-bold text-blue-600">${p.ownerPhone}</div>` : ''}
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // --- MODALS ---
+        function openModal(id) {
+            closeModals();
+            document.getElementById('modal-' + id).classList.remove('hidden');
+        }
+        function closeModals() {
+            document.querySelectorAll('.modal-bg').forEach(m => m.classList.add('hidden'));
+        }
+
+        // INIT
+        if(user) {
+            document.getElementById('auth-btn').innerText = user.name.split(' ')[0].toUpperCase();
+            document.getElementById('auth-btn').onclick = () => {
+                document.getElementById('home-view').classList.add('hidden');
+                document.getElementById('dash-view').classList.remove('hidden');
+                loadDashboard();
+            };
+        }
+        load();
+
+    </script>
+</body>
+</html>
