@@ -301,171 +301,68 @@
 
     // --- CONFIGURATION & STATE ---
 const API_URL = "https://script.google.com/macros/s/AKfycbyiyVKJMexbvOUUba7WVlNvOonj9RUTSLoem7t_kVnF2jr7P_A4y1WNldJ4CE3g6IR0SA/exec"; 
-let currentUser = null; [cite: 76]
-let allProperties = []; [cite: 76]
+function doPost(e) {
+  // Use try-catch to return errors as JSON
+  try {
+    const request = JSON.parse(e.postData.contents);
+    const action = request.action;
+    const data = request.data;
+    let result;
 
-// Helper to communicate with GAS API
-async function apiCall(action, data = {}) {
-    const response = await fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action, data })
-    });
-    const res = await response.json();
-    if (!res.success) throw new Error(res.error);
-    return res.data;
+    if (action === 'authenticate') result = authenticateUser(data.email, data.pass);
+    else if (action === 'getAllProperties') result = getAllProperties();
+    else if (action === 'submitPost') result = submitPost(data);
+    else if (action === 'saveInterest') result = saveInterest(data);
+    else if (action === 'getUserAds') result = getUserAds(data.email);
+
+    return ContentService.createTextOutput(JSON.stringify({ success: true, data: result }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
-function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); } [cite: 77]
-function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); } [cite: 78]
-
-async function handleLogin() {
-    const email = document.getElementById('login-email').value; [cite: 79]
-    const pass = document.getElementById('login-pass').value; [cite: 79]
-    const btn = document.getElementById('btn-login-exec');
-    
-    if(!email || !pass) return alert("Veuillez remplir les champs"); [cite: 80]
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Vérification...'; [cite: 80]
-    
-    try {
-        const user = await apiCall('authenticate', { email, pass }); [cite: 81]
-        if(user) {
-            currentUser = user;
-            updateUIForAuth(); [cite: 83]
-            closeLoginModal();
-        } else {
-            alert("Identifiants incorrects.");
-        }
-    } catch (e) { alert("Erreur de connexion"); }
-    btn.innerText = "SE CONNECTER"; [cite: 82]
-}
-
-function updateUIForAuth() {
-    document.getElementById('nav-auth-btn').innerHTML = `<i class="fas fa-user-circle mr-2 text-yellow-500"></i> ${currentUser.name}`; [cite: 83]
-    document.getElementById('nav-auth-btn').onclick = () => showSection('dashboard'); [cite: 83]
-    
-    document.getElementById('dash-user-name').innerText = currentUser.name; [cite: 84]
-    document.getElementById('prof-name').innerText = currentUser.name; [cite: 84]
-    document.getElementById('prof-email').innerText = currentUser.email; [cite: 84]
-    document.getElementById('prof-tel').value = currentUser.phone || ""; [cite: 84]
-    
-    const badge = document.getElementById('dash-badge-icon');
-    const statusTxt = document.getElementById('dash-user-status');
-    const banner = document.getElementById('premium-banner'); [cite: 85]
-
-    if(currentUser.status === "On") {
-        badge.className = "absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-blue-500"; [cite: 86]
-        statusTxt.innerText = "Membre Certifié Blue"; [cite: 86]
-        statusTxt.className = "text-[10px] font-black uppercase tracking-widest mt-1 text-blue-600"; [cite: 86]
-        banner.classList.remove('hidden'); [cite: 86]
-    } else {
-        badge.className = "absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-gray-400"; [cite: 88]
-        statusTxt.innerText = "Membre Standard"; [cite: 88]
-        statusTxt.className = "text-[10px] font-black uppercase tracking-widest mt-1 text-gray-400"; [cite: 88]
-        banner.classList.add('hidden'); [cite: 89]
+// --- DATABASE FUNCTIONS ---
+function authenticateUser(email, pass) {
+  const rows = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Users').getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === email && rows[i][1].toString() === pass.toString()) {
+      return { email: rows[i][0], name: rows[i][2], phone: rows[i][3], status: rows[i][4] };
     }
-    loadUserAds(); [cite: 90]
+  }
+  return null;
 }
 
-async function loadUserAds() {
-    const list = document.getElementById('user-ads-list');
-    const ads = await apiCall('getUserAds', { email: currentUser.email });
-    list.innerHTML = ads.length ? '' : '<p class="text-gray-400">Aucune annonce.</p>'; [cite: 40, 41]
-    ads.forEach(ad => {
-        list.innerHTML += `<div class="p-4 bg-slate-50 rounded-2xl border flex justify-between">
-            <b>${ad.title}</b> <span>${ad.price} FCFA</span>
-        </div>`;
-    });
+function getAllProperties() {
+  const rows = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Properties').getDataRange().getValues();
+  const headers = rows.shift();
+  return rows.map(r => ({
+    id: r[0], ownerEmail: r[1], ownerName: r[2], type: r[3], cat: r[4], ville: r[5],
+    title: r[6], price: r[7], status: r[8], date: r[9], img: r[10], ownerPhone: r[11], ownerStatus: r[12]
+  }));
 }
 
-async function loadProperties() {
-    try {
-        allProperties = await apiCall('getAllProperties'); [cite: 92]
-        renderProperties(allProperties); [cite: 92]
-    } catch (e) { console.error("Load error", e); }
+function submitPost(p) {
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Properties');
+  sheet.appendRow([
+    "PROP-" + Date.now(), p.ownerEmail, p.ownerName, p.type, p.cat, p.ville, 
+    p.title, p.price, "Live", p.date, p.images[0] || "", p.ownerPhone, p.isPremium ? "On" : "Off"
+  ]);
+  return true;
 }
 
-function renderProperties(data) {
-    const grid = document.getElementById('property-grid'); [cite: 93]
-    grid.innerHTML = ''; [cite: 93]
-    data.forEach(p => {
-        const isBlue = p.ownerStatus === "On"; [cite: 94]
-        const badge = isBlue ? '<i class="fas fa-certificate blue-verify ml-1"></i>' : ''; [cite: 94]
-        const contactInfo = isBlue ? 
-            `<div class="mt-4 p-3 bg-blue-50 rounded-xl text-blue-800 text-xs font-black text-center">${p.ownerPhone}</div>` :
-            `<div class="mt-4 p-3 bg-gray-100 rounded-xl text-gray-500 text-[10px] font-bold text-center uppercase">Vendeur non vérifié</div>`; [cite: 94]
-
-        grid.innerHTML += `
-            <div class="property-card bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-gray-100 flex flex-col">
-                <div class="relative h-60">
-                    <img src="${p.img || 'https://via.placeholder.com/400x300'}" class="w-full h-full object-cover"> [cite: 95]
-                    <span class="absolute top-4 left-4 bg-slate-900/90 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest">${p.type}</span> [cite: 95]
-                </div>
-                <div class="p-8 flex-1 flex flex-col">
-                    <h4 class="text-xl font-black mb-1 flex items-center">${p.title} ${badge}</h4> [cite: 97]
-                    <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-4">${p.ville}</p> [cite: 97]
-                    <div class="text-2xl font-black text-slate-900 mb-6">${Number(p.price).toLocaleString()} <small class="text-xs">FCFA</small></div> [cite: 97]
-                    <button onclick="openInterestModal('${p.id}', '${p.title}')" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-black transition mt-auto">S'INTÉRESSER</button> [cite: 98]
-                    ${contactInfo}
-                </div>
-            </div>`;
-    });
+function saveInterest(d) {
+  SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Interests').appendRow([
+    d.propId, d.propTitle, d.name, d.tel, d.email, d.timestamp
+  ]);
+  return true;
 }
 
-// Logic for Filters, Drag & Drop remains identical to your file [cite: 101-111]
-
-document.getElementById('propertyForm').onsubmit = async function(e) {
-    e.preventDefault(); [cite: 113]
-    if(!currentUser) return openLoginModal(); [cite: 113]
-
-    const btn = document.getElementById('btn-post-exec');
-    btn.disabled = true; [cite: 114]
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PUBLICATION...'; [cite: 114]
-
-    const payload = {
-        ownerEmail: currentUser.email, [cite: 115]
-        ownerName: currentUser.name, [cite: 115]
-        type: document.getElementById('post-type').value, [cite: 115]
-        cat: document.getElementById('post-cat').value, [cite: 115]
-        ville: document.getElementById('post-ville').value, [cite: 115]
-        title: document.getElementById('post-title').value, [cite: 116]
-        price: document.getElementById('post-price').value, [cite: 116]
-        isPremium: document.getElementById('check-certify').checked, [cite: 116]
-        ownerPhone: document.getElementById('post-tel-owner').value, [cite: 116]
-        images: base64Files, [cite: 116]
-        date: new Date().toLocaleDateString('fr-FR') [cite: 117]
-    };
-
-    try {
-        await apiCall('submitPost', payload); [cite: 118]
-        alert("Annonce envoyée !");
-        location.reload();
-    } catch (e) { alert("Erreur publication"); }
-};
-
-async function submitInterest() {
-    const btn = document.getElementById('btn-int-exec');
-    const data = {
-        propId: document.getElementById('interest-prop-id').value, [cite: 122]
-        propTitle: document.getElementById('interest-prop-title').innerText, [cite: 122]
-        name: document.getElementById('int-name').value, [cite: 122]
-        tel: document.getElementById('int-tel').value, [cite: 122]
-        email: document.getElementById('int-email').value, [cite: 122]
-        timestamp: new Date().toLocaleString() [cite: 123]
-    };
-    if(!data.name || !data.tel) return alert("Nom et Téléphone requis"); [cite: 124]
-
-    btn.disabled = true; [cite: 124]
-    try {
-        await apiCall('saveInterest', data); [cite: 125]
-        alert("Le propriétaire a été notifié !");
-        closeInterestModal();
-    } catch (e) { alert("Erreur d'envoi"); }
-    btn.disabled = false;
+function getUserAds(email) {
+  const rows = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Properties').getDataRange().getValues();
+  return rows.filter(r => r[1] === email).map(r => ({ title: r[6], status: r[8], price: r[7] }));
 }
-
-// UI Helpers (showSection, toggleSubCat, etc.) remain the same [cite: 126-136]
-
-loadProperties(); [cite: 136]
         
     </script>
 </body>
