@@ -301,68 +301,261 @@
 
     // --- CONFIGURATION & STATE ---
 const API_URL = "https://script.google.com/macros/s/AKfycbyiyVKJMexbvOUUba7WVlNvOonj9RUTSLoem7t_kVnF2jr7P_A4y1WNldJ4CE3g6IR0SA/exec"; 
-function doPost(e) {
-  // Use try-catch to return errors as JSON
-  try {
-    const request = JSON.parse(e.postData.contents);
-    const action = request.action;
-    const data = request.data;
-    let result;
 
-    if (action === 'authenticate') result = authenticateUser(data.email, data.pass);
-    else if (action === 'getAllProperties') result = getAllProperties();
-    else if (action === 'submitPost') result = submitPost(data);
-    else if (action === 'saveInterest') result = saveInterest(data);
-    else if (action === 'getUserAds') result = getUserAds(data.email);
+        let currentUser = null;
+        let allProperties = [];
+        let base64Files = [];
 
-    return ContentService.createTextOutput(JSON.stringify({ success: true, data: result }))
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
+        // --- API HANDLER (Bypasses CORS Preflight) ---
+        async function apiCall(action, data = {}) {
+            const response = await fetch(API_URL, {
+                method: 'POST', // Simple Request (no custom headers)
+                body: JSON.stringify({ action, data })
+            });
+            const res = await response.json();
+            if (!res.success) throw new Error(res.error);
+            return res.data;
+        }
 
-// --- DATABASE FUNCTIONS ---
-function authenticateUser(email, pass) {
-  const rows = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Users').getDataRange().getValues();
-  for (let i = 1; i < rows.length; i++) {
-    if (rows[i][0] === email && rows[i][1].toString() === pass.toString()) {
-      return { email: rows[i][0], name: rows[i][2], phone: rows[i][3], status: rows[i][4] };
-    }
-  }
-  return null;
-}
+        // --- AUTHENTICATION ---
+        function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
+        function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
 
-function getAllProperties() {
-  const rows = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Properties').getDataRange().getValues();
-  const headers = rows.shift();
-  return rows.map(r => ({
-    id: r[0], ownerEmail: r[1], ownerName: r[2], type: r[3], cat: r[4], ville: r[5],
-    title: r[6], price: r[7], status: r[8], date: r[9], img: r[10], ownerPhone: r[11], ownerStatus: r[12]
-  }));
-}
+        async function handleLogin() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            const btn = document.getElementById('btn-login-exec');
+            if(!email || !pass) return alert("Veuillez remplir les champs");
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Vérification...';
+            try {
+                const user = await apiCall('authenticate', { email, pass });
+                if(user) {
+                    currentUser = user;
+                    updateUIForAuth();
+                    closeLoginModal();
+                } else {
+                    alert("Identifiants incorrects.");
+                }
+            } catch (e) { alert("Erreur de connexion au serveur."); }
+            btn.innerText = "SE CONNECTER";
+        }
 
-function submitPost(p) {
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Properties');
-  sheet.appendRow([
-    "PROP-" + Date.now(), p.ownerEmail, p.ownerName, p.type, p.cat, p.ville, 
-    p.title, p.price, "Live", p.date, p.images[0] || "", p.ownerPhone, p.isPremium ? "On" : "Off"
-  ]);
-  return true;
-}
+        function updateUIForAuth() {
+            document.getElementById('nav-auth-btn').innerHTML = `<i class="fas fa-user-circle mr-2 text-yellow-500"></i> ${currentUser.name}`;
+            document.getElementById('nav-auth-btn').onclick = () => showSection('dashboard');
+            document.getElementById('dash-user-name').innerText = currentUser.name;
+            document.getElementById('prof-name').innerText = currentUser.name;
+            document.getElementById('prof-email').innerText = currentUser.email;
+            document.getElementById('prof-tel').value = currentUser.phone || "";
+            
+            const badge = document.getElementById('dash-badge-icon');
+            const statusTxt = document.getElementById('dash-user-status');
+            const banner = document.getElementById('premium-banner');
 
-function saveInterest(d) {
-  SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Interests').appendRow([
-    d.propId, d.propTitle, d.name, d.tel, d.email, d.timestamp
-  ]);
-  return true;
-}
+            if(currentUser.status === "On") {
+                badge.className = "absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-blue-500";
+                statusTxt.innerText = "Membre Certifié Blue";
+                statusTxt.className = "text-[10px] font-black uppercase tracking-widest mt-1 text-blue-600";
+                banner.classList.remove('hidden');
+            } else {
+                badge.className = "absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-gray-400";
+                statusTxt.innerText = "Membre Standard";
+                statusTxt.className = "text-[10px] font-black uppercase tracking-widest mt-1 text-gray-400";
+                banner.classList.add('hidden');
+            }
+            loadUserAds();
+        }
 
-function getUserAds(email) {
-  const rows = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Properties').getDataRange().getValues();
-  return rows.filter(r => r[1] === email).map(r => ({ title: r[6], status: r[8], price: r[7] }));
-}
+        function logout() { currentUser = null; location.reload(); }
+
+        // --- PROPERTIES & FILTERS ---
+        async function loadProperties() {
+            try {
+                allProperties = await apiCall('getAllProperties');
+                renderProperties(allProperties);
+            } catch (e) { console.error("Load error", e); }
+        }
+
+        function renderProperties(data) {
+            const grid = document.getElementById('property-grid');
+            grid.innerHTML = '';
+            data.forEach(p => {
+                const isBlue = p.ownerStatus === "On";
+                const badge = isBlue ? '<i class="fas fa-certificate blue-verify ml-1"></i>' : '';
+                const contactInfo = isBlue ? 
+                    `<div class="mt-4 p-3 bg-blue-50 rounded-xl text-blue-800 text-xs font-black text-center"><i class="fas fa-phone-alt mr-2"></i> ${p.ownerPhone}</div>` :
+                    `<div class="mt-4 p-3 bg-gray-100 rounded-xl text-gray-500 text-[10px] font-bold text-center uppercase">Vendeur non vérifié</div>`;
+
+                grid.innerHTML += `
+                    <div class="property-card bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-gray-100 flex flex-col">
+                        <div class="relative h-60">
+                            <img src="${p.img || 'https://via.placeholder.com/400x300'}" class="w-full h-full object-cover">
+                            <span class="absolute top-4 left-4 bg-slate-900/90 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest">${p.type}</span>
+                        </div>
+                        <div class="p-8 flex-1 flex flex-col">
+                            <h4 class="text-xl font-black mb-1 flex items-center">${p.title} ${badge}</h4>
+                            <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-4">${p.ville}</p>
+                            <div class="text-2xl font-black text-slate-900 mb-6">${Number(p.price).toLocaleString()} <small class="text-xs">FCFA</small></div>
+                            <button onclick="openInterestModal('${p.id}', '${p.title}')" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-black transition mt-auto">S'INTÉRESSER</button>
+                            ${contactInfo}
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function applyFilters() {
+            const type = document.getElementById('filter-type').value;
+            const ville = document.getElementById('filter-ville').value;
+            const cat = document.getElementById('filter-subcat').value;
+            const filtered = allProperties.filter(p => (!type || p.type === type) && (!ville || p.ville === ville) && (!cat || p.cat === cat));
+            document.getElementById('btn-show-all').classList.remove('hidden');
+            renderProperties(filtered);
+        }
+
+        function filterQuick(type) {
+            document.getElementById('filter-type').value = type;
+            toggleSubCat();
+            applyFilters();
+            showSection('home');
+        }
+
+        function resetFilters() {
+            document.getElementById('filter-type').value = "";
+            document.getElementById('filter-ville').value = "";
+            document.getElementById('filter-subcat').value = "";
+            renderProperties(allProperties);
+            document.getElementById('btn-show-all').classList.add('hidden');
+        }
+
+        function filterVerifiedOnly() {
+            renderProperties(allProperties.filter(p => p.ownerStatus === "On"));
+            document.getElementById('btn-show-all').classList.remove('hidden');
+        }
+
+        // --- PUBLICATION LOGIC ---
+        document.getElementById('propertyForm').onsubmit = async function(e) {
+            e.preventDefault();
+            if(!currentUser) return openLoginModal();
+            const btn = document.getElementById('btn-post-exec');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PUBLICATION...';
+
+            const payload = {
+                ownerEmail: currentUser.email,
+                ownerName: currentUser.name,
+                type: document.getElementById('post-type').value,
+                cat: document.getElementById('post-cat').value,
+                ville: document.getElementById('post-ville').value,
+                title: document.getElementById('post-title').value,
+                price: document.getElementById('post-price').value,
+                isPremium: document.getElementById('check-certify').checked,
+                ownerPhone: document.getElementById('post-tel-owner').value,
+                images: base64Files,
+                date: new Date().toLocaleDateString('fr-FR')
+            };
+
+            try {
+                await apiCall('submitPost', payload);
+                alert("Annonce publiée !");
+                location.reload();
+            } catch (e) { alert("Erreur lors de la publication."); btn.disabled = false; }
+        };
+
+        // --- UI HELPERS ---
+        function showSection(id) {
+            document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id + '-section').classList.remove('hidden');
+            window.scrollTo(0,0);
+        }
+
+        function switchDashTab(tabId) {
+            ['activities', 'ads', 'payments', 'profile'].forEach(t => document.getElementById('tab-'+t).classList.add('hidden'));
+            document.getElementById('tab-'+tabId).classList.remove('hidden');
+        }
+
+        function toggleSubCat() {
+            const type = document.getElementById('filter-type').value;
+            const sub = document.getElementById('filter-subcat');
+            sub.innerHTML = '<option value="">Toutes les Catégories</option>';
+            if(type !== 'Terrain') {
+                sub.innerHTML += '<option value="Chambre">Chambre</option><option value="Appartement">Appartement</option><option value="Maison">Maison</option>';
+            } else {
+                sub.innerHTML += '<option value="Terrain">Terrain Nu</option>';
+            }
+        }
+
+        function togglePostSubCat() {
+            const type = document.getElementById('post-type').value;
+            const sub = document.getElementById('post-cat');
+            sub.innerHTML = (type === 'Terrain') ? '<option value="Terrain">Terrain</option>' : 
+                '<option value="Maison">Maison</option><option value="Appartement">Appartement</option><option value="Chambre">Chambre</option>';
+        }
+
+        function checkAuthAndPost() {
+            if(!currentUser) openLoginModal();
+            else showSection('post-property');
+        }
+
+        // --- FILE HANDLING ---
+        const fileInput = document.getElementById('fileInput');
+        document.getElementById('drop-zone').onclick = () => fileInput.click();
+        fileInput.onchange = (e) => {
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '';
+            base64Files = [];
+            Array.from(e.target.files).slice(0, 5).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    preview.innerHTML += `<img src="${ev.target.result}" class="w-20 h-20 object-cover rounded-xl border">`;
+                    base64Files.push(ev.target.result);
+                };
+                reader.readAsDataURL(file);
+            });
+        };
+
+        function toggleCertifyInputs() {
+            document.getElementById('certify-inputs').classList.toggle('hidden', !document.getElementById('check-certify').checked);
+        }
+
+        // --- INTEREST MODAL ---
+        function openInterestModal(id, title) {
+            document.getElementById('interest-prop-id').value = id;
+            document.getElementById('interest-prop-title').innerText = title;
+            document.getElementById('interest-modal').classList.remove('hidden');
+        }
+        function closeInterestModal() { document.getElementById('interest-modal').classList.add('hidden'); }
+
+        async function submitInterest() {
+            const data = {
+                propId: document.getElementById('interest-prop-id').value,
+                propTitle: document.getElementById('interest-prop-title').innerText,
+                name: document.getElementById('int-name').value,
+                tel: document.getElementById('int-tel').value,
+                email: document.getElementById('int-email').value,
+                timestamp: new Date().toLocaleString()
+            };
+            if(!data.name || !data.tel) return alert("Champs requis");
+            try {
+                await apiCall('saveInterest', data);
+                alert("Demande envoyée !");
+                closeInterestModal();
+            } catch (e) { alert("Erreur d'envoi."); }
+        }
+
+        async function loadUserAds() {
+            const list = document.getElementById('user-ads-list');
+            try {
+                const ads = await apiCall('getUserAds', { email: currentUser.email });
+                list.innerHTML = ads.length ? '' : '<p class="text-gray-400">Aucune annonce.</p>';
+                ads.forEach(ad => {
+                    list.innerHTML += `<div class="p-4 bg-slate-50 rounded-2xl border flex justify-between"><b>${ad.title}</b> <span>${Number(ad.price).toLocaleString()} FCFA</span></div>`;
+                });
+            } catch(e) {}
+        }
+
+        // Init
+        loadProperties();
         
     </script>
 </body>
