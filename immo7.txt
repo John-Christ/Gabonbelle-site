@@ -1,0 +1,286 @@
+// --- CONFIGURATION GLOBALE ---
+const SPREADSHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
+
+function doPost(e) {
+  try {
+    const request = JSON.parse(e.postData.contents);
+    const action = request.action;
+    const data = request.data;
+    let result;
+
+    switch (action) {
+      case 'authenticate':
+        result = authenticateUser(data.email, data.pass);
+        break;
+      case 'register':
+        result = registerUser(data.name, data.email, data.phone, data.pass);
+        break;
+      case 'updateProfile':
+        result = updateProfile(data.email, data.name, data.phone, data.avatar);
+        break;
+      case 'getAllProperties':
+        result = getAllProperties();
+        break;
+      case 'submitPost':
+        result = submitPost(data);
+        break;
+      case 'requestUpgrade':
+        result = requestUpgrade(data);
+        break;
+      case 'getUserStats':
+        result = getUserStats(data.email);
+        break;
+      case 'getUserAds':
+        result = getUserAds(data.email);
+        break;
+      case 'getUserInterests':
+        result = getUserInterests(data.email);
+        break;
+      case 'saveInterest':
+        result = saveInterest(data);
+        break;
+      case 'incrementViews':
+        result = incrementViews(data.id);
+        break;
+      default:
+        throw new Error("Action non reconnue");
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({ success: true, data: result }))
+                         .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
+                         .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// --- GESTION DES UTILISATEURS ---
+function authenticateUser(email, pass) {
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('users');
+  const rows = sheet.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0].toString().toLowerCase().trim() === email.toLowerCase().trim() && rows[i][3].toString() === pass.toString()) {
+      return { 
+        email: rows[i][0], 
+        name: rows[i][1], 
+        phone: rows[i][2], 
+        status: rows[i][4] || "Off",
+        avatar: rows[i][5] || ""
+      };
+    }
+  }
+  return null;
+}
+
+function registerUser(name, email, phone, pass) {
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('users');
+  const rows = sheet.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0].toString().toLowerCase().trim() === email.toLowerCase().trim()) {
+      throw new Error("Cet email est déjà utilisé.");
+    }
+  }
+  sheet.appendRow([email, name, phone, pass, "Off", ""]);
+  return { email, name, phone, status: "Off", avatar: "" };
+}
+
+function updateProfile(email, name, phone, avatar) {
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('users');
+  const rows = sheet.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0].toString().toLowerCase().trim() === email.toLowerCase().trim()) {
+      sheet.getRange(i + 1, 2).setValue(name);
+      sheet.getRange(i + 1, 3).setValue(phone);
+      if (avatar !== undefined) {
+        sheet.getRange(i + 1, 6).setValue(avatar);
+      }
+      
+      let userStatus = rows[i][4] || "Off";
+      let userAvatar = avatar !== undefined ? avatar : (rows[i][5] || "");
+      return { email, name, phone, status: userStatus, avatar: userAvatar };
+    }
+  }
+  throw new Error("Utilisateur introuvable");
+}
+
+// --- CATALOGUE ET PROPRIETES ---
+function getAllProperties() {
+  const propSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('properties');
+  const userSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('users');
+  
+  if (!propSheet) return [];
+  
+  const userMap = {};
+  if (userSheet) {
+    const userRows = userSheet.getDataRange().getValues();
+    for (let j = 1; j < userRows.length; j++) {
+      userMap[userRows[j][0].toString().toLowerCase().trim()] = {
+        status: userRows[j][4] || "Off",
+        avatar: userRows[j][5] || ""
+      };
+    }
+  }
+
+  const rows = propSheet.getDataRange().getValues();
+  const properties = [];
+  for (let i = 1; i < rows.length; i++) {
+    let ownerEmailClean = rows[i][1].toString().toLowerCase().trim();
+    let realOwnerStatus = userMap[ownerEmailClean] ? userMap[ownerEmailClean].status : (rows[i][4] || "Off");
+    let realOwnerAvatar = userMap[ownerEmailClean] ? userMap[ownerEmailClean].avatar : "";
+
+    properties.push({
+      id: rows[i][0], 
+      ownerEmail: rows[i][1], 
+      ownerName: rows[i][2], 
+      ownerPhone: rows[i][3], 
+      ownerStatus: realOwnerStatus, 
+      ownerAvatar: realOwnerAvatar,
+      type: rows[i][5], 
+      cat: rows[i][6], 
+      ville: rows[i][7], 
+      title: rows[i][8], 
+      price: rows[i][9], 
+      img: rows[i][10], // Contiendra la chaîne JSON du tableau des images
+      isBoosted: rows[i][11], 
+      isPremium: rows[i][12], 
+      date: rows[i][13] ? new Date(rows[i][13]).toLocaleDateString('fr-FR') : new Date().toLocaleDateString('fr-FR'),
+      views: parseInt(rows[i][14] || 0)
+    });
+  }
+  return properties;
+}
+
+function submitPost(data) {
+  const propSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('properties');
+  const userSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('users');
+  let ownerStatus = "Off";
+  if (userSheet) {
+    const userRows = userSheet.getDataRange().getValues();
+    for (let i = 1; i < userRows.length; i++) {
+      if (userRows[i][0].toString().toLowerCase().trim() === data.ownerEmail.toLowerCase().trim()) {
+        ownerStatus = userRows[i][4] || "Off";
+        break;
+      }
+    }
+  }
+  
+  const id = "PROP_" + new Date().getTime();
+  const dateStr = new Date().toISOString();
+  
+  // Format attendu pour 'img': chaîne JSON issue de data.images
+  const imgData = Array.isArray(data.images) ? JSON.stringify(data.images) : JSON.stringify([data.img]);
+
+  propSheet.appendRow([
+    id, data.ownerEmail, data.ownerName, data.ownerPhone, ownerStatus,
+    data.type, data.cat, data.ville, data.title, data.price,
+    imgData, data.isBoosted || false, data.isPremium || false, dateStr, 0
+  ]);
+  
+  updateActivitiesSheet();
+  return { success: true, id: id };
+}
+
+function incrementViews(id) {
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('properties');
+  const rows = sheet.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0].toString() === id.toString()) {
+      let currentViews = parseInt(rows[i][14] || 0);
+      sheet.getRange(i + 1, 15).setValue(currentViews + 1);
+      updateActivitiesSheet();
+      return currentViews + 1;
+    }
+  }
+  return 0;
+}
+
+function saveInterest(data) {
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('interests');
+  sheet.appendRow([data.timestamp, data.propId, data.propTitle, data.name, data.tel, data.email]);
+  updateActivitiesSheet();
+  return true;
+}
+
+function getUserAds(email) {
+  const properties = getAllProperties();
+  return properties.filter(ad => ad.ownerEmail.toLowerCase().trim() === email.toLowerCase().trim());
+}
+
+function getUserInterests(email) {
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('interests');
+  if (!sheet) return [];
+  const rows = sheet.getDataRange().getValues();
+  const interests = [];
+  const properties = getAllProperties();
+  
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][5].toString().toLowerCase().trim() === email.toLowerCase().trim()) {
+      let pId = rows[i][1].toString();
+      let foundProp = properties.find(p => p.id === pId);
+      if (foundProp) {
+        interests.push(foundProp);
+      }
+    }
+  }
+  return interests;
+}
+
+function getUserStats(email) {
+  const properties = getAllProperties();
+  const interestSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('interests');
+  
+  let userPropertiesIds = [];
+  let totalViews = 0;
+  
+  properties.forEach(p => {
+    if (p.ownerEmail.toLowerCase().trim() === email.toLowerCase().trim()) {
+      userPropertiesIds.push(p.id.toString());
+      totalViews += p.views;
+    }
+  });
+  
+  let leadsCount = 0;
+  if (interestSheet && userPropertiesIds.length > 0) {
+    const intRows = interestSheet.getDataRange().getValues();
+    for (let j = 1; j < intRows.length; j++) {
+      if (userPropertiesIds.indexOf(intRows[j][1].toString()) !== -1) {
+        leadsCount++;
+      }
+    }
+  }
+  return { views: totalViews, leads: leadsCount, commissions: (leadsCount * 5000) };
+}
+
+// --- MISE À JOUR SYNCHRONE DE L'ONGLET 'Activités' ---
+function updateActivitiesSheet() {
+  let ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  let sheet = ss.getSheetByName('Activités');
+  if (!sheet) {
+    sheet = ss.insertSheet('Activités');
+    sheet.appendRow(["Vues Annonces", "Personnes Intéressées", "Commission Total"]);
+  }
+  
+  const propSheet = ss.getSheetByName('properties');
+  let globalViews = 0;
+  if (propSheet) {
+    let pRows = propSheet.getDataRange().getValues();
+    for (let i = 1; i < pRows.length; i++) {
+      globalViews += parseInt(pRows[i][14] || 0);
+    }
+  }
+  
+  const intSheet = ss.getSheetByName('interests');
+  let globalLeads = 0;
+  if (intSheet) {
+    globalLeads = intSheet.getLastRow() - 1;
+    if (globalLeads < 0) globalLeads = 0;
+  }
+  
+  let globalCommissions = globalLeads * 5000;
+  
+  sheet.getRange(2, 1, 1, 3).setValues([[globalViews, globalLeads, globalCommissions]]);
+}
+
+function requestUpgrade(type) {
+  return { success: true, message: "Demande prise en compte pour " + type };
+}
