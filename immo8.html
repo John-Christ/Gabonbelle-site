@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gabonbelle Immobilier | Investissement & Prestige</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .gold-gradient { background: linear-gradient(135deg, #d4af37 0%, #f9e27d 100%); }
+        .blue-verify { color: #1DA1F2; }
+        .hidden { display: none; }
+        .property-card { transition: all 0.4s ease; }
+        .property-card:hover { transform: translateY(-8px); }
+        .drag-over { border-color: #d4af37 !important; background-color: #fffbeb !important; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-900">
+
+    <div id="modal-success" class="fixed inset-0 bg-black/60 z-[200] hidden flex items-center justify-center p-4 animate-fade-in">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border border-emerald-100">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 mb-2">Opération réussie !</h3>
+            <p id="modal-success-msg" class="text-sm text-gray-500 italic mb-6">Action effectuée avec succès.</p>
+            <button onclick="closeSuccessModal()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition">Continuer</button>
+        </div>
+    </div>
+
+    <div id="modal-error" class="fixed inset-0 bg-black/60 z-[200] hidden flex items-center justify-center p-4 animate-fade-in">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border border-rose-100">
+            <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 mb-2">Une erreur est survenue</h3>
+            <p id="modal-error-msg" class="text-sm text-gray-500 italic mb-6">Impossible de finaliser l'action.</p>
+            <button onclick="closeErrorModal()" class="w-full bg-rose-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-rose-600/20 hover:bg-rose-700 transition">Fermer</button>
+        </div>
+    </div>
+
+    <nav class="bg-slate-900 text-white p-4 shadow-2xl sticky top-0 z-50 border-b border-yellow-600/30">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-black tracking-tighter cursor-pointer" onclick="showSection('home')">
+                GABONBELLE <span class="text-yellow-500 italic text-3xl">IMMO</span>
+            </h1>
+            
+            <div class="hidden md:flex space-x-8 font-medium">
+                <a href="javascript:void(0)" onclick="filterQuick('Vente')" class="hover:text-yellow-500 transition">Acheter</a>
+                <a href="javascript:void(0)" onclick="filterQuick('Location')" class="hover:text-yellow-500 transition">Louer</a>
+                <a href="javascript:void(0)" onclick="filterQuick('Terrain')" class="hover:text-yellow-500 transition">Terrains</a>
+                <button id="nav-auth-btn" onclick="toggleAuthOrDash()" class="hover:text-yellow-500 flex items-center">
+                    <i class="fas fa-user-circle mr-2"></i> Connexion / Dashboard
+                </button>
+            </div>
+            <button onclick="checkAuthAndPost()" class="gold-gradient text-slate-900 px-6 py-2 rounded-full font-bold shadow-lg hover:scale-105 transition transform">
+                POSTER UNE ANNONCE
+            </button>
+        </div>
+    </nav>
+
+    <div id="login-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full relative">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-black"><i class="fas fa-times"></i></button>
+            
+            <div class="flex border-b mb-6 font-black text-center text-sm uppercase tracking-wider">
+                <button id="tab-login-btn" onclick="switchAuthTab('login')" class="flex-1 pb-3 border-b-2 border-slate-900 text-slate-900">Connexion</button>
+                <button id="tab-register-btn" onclick="switchAuthTab('register')" class="flex-1 pb-3 border-b-2 border-transparent text-gray-400 hover:text-slate-900">Inscription</button>
+            </div>
+
+            <div id="form-login" class="space-y-4">
+                <input type="email" id="login-email" placeholder="Email" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <input type="password" id="login-pass" placeholder="Mot de passe" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <button onclick="handleLogin()" id="btn-login-exec" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-black transition">SE CONNECTER</button>
+            </div>
+
+            <div id="form-register" class="space-y-4 hidden">
+                <input type="text" id="reg-name" placeholder="Nom complet" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <input type="email" id="reg-email" placeholder="Adresse Email" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <input type="tel" id="reg-phone" placeholder="Numéro de téléphone" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <input type="password" id="reg-pass" placeholder="Mot de passe" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <button onclick="handleRegister()" id="btn-register-exec" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-black transition">S'INSCRIRE</button>
+            </div>
+            
+            <p class="text-center text-xs text-gray-500 italic mt-4">L'inscription se fait automatiquement lors de votre premier achat de certification.</p>
+        </div>
+    </div>
+
+    <div id="interest-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full">
+            <h3 class="text-2xl font-black mb-2">Je suis intéressé</h3>
+            <p id="interest-prop-title" class="text-yellow-600 font-bold mb-6 text-sm"></p>
+      
+            <div class="space-y-4">
+                <input type="hidden" id="interest-prop-id">
+                <input type="text" id="int-name" placeholder="Votre Nom complet" class="w-full p-4 bg-slate-50 border rounded-xl outline-none">
+                <input type="tel" id="int-tel" placeholder="Votre Numéro (Airtel Money/Moov)" class="w-full p-4 bg-slate-50 border rounded-xl outline-none">
+                <input type="email" id="int-email" placeholder="Votre Email" class="w-full p-4 bg-slate-50 border rounded-xl outline-none">
+                <div class="flex space-x-2">
+                    <button onclick="submitInterest()" id="btn-int-exec" class="flex-1 bg-slate-900 text-white py-4 rounded-xl font-bold">ENVOYER</button>
+                    <button onclick="closeInterestModal()" class="px-6 py-4 border rounded-xl font-bold">ANNULER</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main id="main-content">
+        
+        <section id="home-section" class="py-8">
+            <header class="bg-slate-900 text-white py-12 px-4 text-center rounded-b-[3rem] shadow-2xl mb-12">
+                <h2 class="text-4xl font-extrabold mb-8">L'Immobilier au Gabon</h2>
+       
+                <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-4 text-slate-800">
+                    <select id="filter-type" class="p-3 border rounded-lg" onchange="toggleSubCat()">
+                        <option value="">Tous les types</option>
+                        <option value="Location">Location</option>
+                        <option value="Vente">Vente</option>
+                        <option value="Terrain">Terrain</option>
+                    </select>
+                 
+                    <select id="filter-ville" class="p-3 border rounded-lg">
+                        <option value="">Toutes les Villes</option>
+                        <option value="Libreville">Libreville</option>
+                        <option value="Akanda">Akanda</option>
+                        <option value="Port-Gentil">Port-Gentil</option>
+                        <option value="Ntoum">Ntoum</option>
+                    </select>
+ 
+                    <select id="filter-subcat" class="p-3 border rounded-lg">
+                        <option value="">Toutes les Catégories</option>
+                        <option value="Chambre">Chambre</option>
+                        <option value="Appartement">Appartement</option>
+                        <option value="Maison">Maison</option>
+                    </select>
+                    <button onclick="applyFilters()" class="bg-slate-900 text-white rounded-lg font-bold hover:bg-black transition">
+                        <i class="fas fa-search"></i> RECHERCHER
+                    </button>
+                </div>
+            </header>
+
+            <div class="container mx-auto px-4 space-y-12">
+                <div id="sponsored-section" class="hidden">
+                    <div class="flex items-center space-x-2 mb-6">
+                        <i class="fas fa-fire text-red-500 text-xl animate-pulse"></i>
+                        <h3 class="text-2xl font-black italic tracking-tight uppercase text-slate-900">À la une (Sponsorisé)</h3>
+                    </div>
+                    <div id="sponsored-grid" class="grid grid-cols-1 md:grid-cols-3 gap-10"></div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-end mb-8 border-b pb-4">
+                        <h3 id="catalogue-title" class="text-2xl font-black italic">Dernières Opportunités</h3>
+                        <div class="flex space-x-3">
+                            <button id="btn-show-all" onclick="resetFilters()" class="hidden px-4 py-2 border rounded-full text-xs font-bold hover:bg-gray-100 uppercase tracking-tighter">Voir Tout</button>
+                            <button onclick="filterVerifiedOnly()" class="px-4 py-2 gold-gradient rounded-full text-xs font-black uppercase tracking-tighter shadow-md">Vérifiés Seulement</button>
+                        </div>
+                    </div>
+
+                    <div id="properties-loader" class="flex flex-col items-center justify-center py-16 space-y-4">
+                        <i class="fas fa-circle-notch fa-spin text-4xl text-yellow-500"></i>
+                        <p class="text-sm font-bold text-slate-500 italic tracking-wide">Recherche des meilleures opportunités au Gabon...</p>
+                    </div>
+
+                    <div id="property-grid" class="grid grid-cols-1 md:grid-cols-3 gap-10 hidden"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="dashboard-section" class="container mx-auto px-4 py-12 hidden">
+            <div class="flex flex-col md:flex-row gap-8">
+                <aside class="w-full md:w-1/4 bg-white rounded-3xl shadow-xl p-6 border border-gray-200 h-fit">
+                    <div class="text-center mb-8">
+                        <div class="w-24 h-24 mx-auto mb-4 relative group cursor-pointer" onclick="triggerProfilePhotoUpload()">
+                            <img id="dash-user-photo" src="" class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg hidden">
+                            <div id="dash-user-photo-placeholder" class="w-24 h-24 bg-slate-200 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+                                <i class="fas fa-user text-4xl text-slate-400"></i>
+                            </div>
+                            <div class="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                                <i class="fas fa-camera text-white text-lg"></i>
+                            </div>
+                            <input type="file" id="profilePhotoInput" accept="image/*" class="hidden" onchange="handleProfilePhotoUpload(event)">
+                            <span id="dash-badge-icon" class="absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-gray-400">
+                                <i class="fas fa-certificate text-white text-xs"></i>
+                            </span>
+                        </div>
+                        <h4 id="dash-user-name" class="font-bold text-xl">Utilisateur</h4>
+                        <p id="dash-user-status" class="text-[10px] font-black uppercase tracking-widest mt-1 text-gray-500"></p>
+                    </div>
+                    <nav class="space-y-2">
+                        <button onclick="switchDashTab('activities')" class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 font-bold transition flex items-center"><i class="fas fa-chart-pie mr-3"></i> Activités</button>
+                        <button onclick="switchDashTab('ads')" class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 font-bold transition flex items-center"><i class="fas fa-layer-group mr-3"></i> Mes Annonces</button>
+                        <button onclick="switchDashTab('payments')" class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 font-bold transition flex items-center"><i class="fas fa-credit-card mr-3"></i> Paiements & Stats</button>
+                        <button onclick="switchDashTab('profile')" class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 font-bold transition flex items-center"><i class="fas fa-id-card mr-3"></i> Infos Personnelles</button>
+                        <button onclick="logout()" class="w-full text-left p-4 rounded-2xl hover:bg-red-50 text-red-500 font-bold border-t mt-4 transition flex items-center"><i class="fas fa-power-off mr-3"></i> Déconnexion</button>
+                    </nav>
+                </aside>
+
+                <div class="flex-1">
+                    <div id="tab-activities" class="space-y-6">
+                        <div id="premium-banner" class="hidden gold-gradient p-8 rounded-3xl shadow-xl flex justify-between items-center text-slate-900">
+                            <div>
+                                <h3 class="text-2xl font-black">VOTRE STATUT EST ACTIF</h3>
+                                <p class="font-medium italic">Visibilité maximale garantie ce mois.</p>
+                            </div>
+                            <i class="fas fa-crown text-4xl opacity-50"></i>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
+                                <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-2">Vues Annonces</p>
+                                <p id="stat-views" class="text-4xl font-black italic">0</p>
+                            </div>
+                            <div class="bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
+                                <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-2">Personnes Intéressées</p>
+                                <p id="stat-leads" class="text-4xl font-black italic">0</p>
+                            </div>
+                            <div class="bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
+                                <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-2">Commission Total</p>
+                                <p id="stat-comm" class="text-4xl font-black italic">0 <small class="text-sm">FCFA</small></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-ads" class="hidden bg-white p-8 rounded-3xl shadow-lg">
+                        <h3 class="text-2xl font-black mb-6">Gestion des Biens</h3>
+                        <div id="user-ads-list" class="space-y-4"></div>
+                    </div>
+
+                    <div id="tab-payments" class="hidden bg-white p-8 rounded-3xl shadow-lg">
+                        <h3 class="text-2xl font-black mb-8 italic text-yellow-600">Services Premium & Paiement</h3>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div class="bg-slate-50 p-6 rounded-3xl border border-gray-200">
+                                <h4 class="font-black text-lg mb-2 uppercase">Certification Blue</h4>
+                                <p class="text-sm text-gray-500 mb-6 italic leading-relaxed">Affiche votre nom réel, votre numéro et vous place en tête de recherche.</p>
+                                <p class="text-3xl font-black mb-6">25.000 <small class="text-xs">FCFA / mois</small></p>
+                                <div class="space-y-3">
+                                    <input type="tel" id="pay-airtel-phone-1" placeholder="Numéro de l'expéditeur Airtel" class="w-full p-4 border rounded-2xl outline-none bg-white">
+                                    <input type="text" id="pay-airtel-id-1" placeholder="ID Transaction Airtel Money" class="w-full p-4 border rounded-2xl outline-none bg-white">
+                                    <button onclick="requestUpgrade('Blue')" class="w-full gold-gradient py-4 rounded-2xl font-black text-sm shadow-lg uppercase tracking-widest">Activer via ID</button>
+                                </div>
+                            </div>
+     
+                            <div class="bg-slate-50 p-6 rounded-3xl border border-gray-200">
+                                <h4 class="font-black text-lg mb-2 uppercase">Mise en avant (Boost)</h4>
+                                <p class="text-sm text-gray-500 mb-6 italic leading-relaxed">Faites briller votre annonce sur la page d'accueil pendant 7 jours.</p>
+                                <p class="text-3xl font-black mb-6">10.000 <small class="text-xs">FCFA / boost</small></p>
+                                <div class="space-y-3">
+                                    <input type="tel" id="pay-airtel-phone-2" placeholder="Numéro de l'expéditeur Airtel" class="w-full p-4 border rounded-2xl outline-none bg-white">
+                                    <input type="text" id="pay-airtel-id-2" placeholder="ID Transaction Airtel Money" class="w-full p-4 border rounded-2xl outline-none bg-white">
+                                    <button onclick="requestUpgrade('Boost')" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-sm shadow-lg uppercase tracking-widest">Booster maintenant</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-profile" class="hidden bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
+                        <h3 class="text-2xl font-black mb-6 italic">Informations Personnelles</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-black uppercase text-gray-400 mb-2">Nom Complet</label>
+                                <input type="text" id="prof-name-input" class="w-full p-4 bg-slate-50 rounded-xl border font-bold outline-none focus:ring-2 focus:ring-yellow-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black uppercase text-gray-400 mb-2">Email (Non modifiable)</label>
+                                <p id="prof-email" class="p-4 bg-slate-100 rounded-xl border font-bold text-gray-500"></p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black uppercase text-gray-400 mb-2">Téléphone</label>
+                                <input type="text" id="prof-tel" class="w-full p-4 bg-slate-50 rounded-xl border font-bold outline-none focus:ring-2 focus:ring-yellow-500">
+                            </div>
+                            <div class="flex items-end">
+                                <button onclick="updateProfile()" id="btn-update-prof" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold">Enregistrer les modifications</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="post-property-section" class="container mx-auto px-4 py-12 hidden">
+            <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl p-10 border border-gray-100">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-black text-slate-900 uppercase tracking-tighter">Publier une Propriété</h2>
+                    <p class="text-gray-400 italic">Prenez jusqu'à 4 photos claires pour captiver nos investisseurs.</p>
+                </div>
+
+                <form id="propertyForm" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-5">
+                        <div>
+                            <label class="text-xs font-black uppercase text-gray-500">Type de bien</label>
+                            <select id="post-type" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none" onchange="togglePostSubCat()">
+                                <option value="Vente">À Vendre</option>
+                                <option value="Location">À Louer</option>
+                                <option value="Terrain">Terrain</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-black uppercase text-gray-500">Catégorie</label>
+                            <select id="post-cat" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                                <option value="Maison">Maison / Villa</option>
+                                <option value="Appartement">Appartement</option>
+                                <option value="Chambre">Chambre</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-black uppercase text-gray-500">Ville au Gabon</label>
+                            <select id="post-ville" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                                <option value="Libreville">Libreville</option>
+                                <option value="Akanda">Akanda</option>
+                                <option value="Port-Gentil">Port-Gentil</option>
+                                <option value="Ntoum">Ntoum</option>
+                            </select>
+                        </div>
+                        <input type="text" id="post-title" placeholder="Titre (ex: Superbe Studio Meublé)" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none" required>
+                        <input type="number" id="post-price" placeholder="Prix (FCFA)" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none" required>
+                    </div>
+
+                    <div class="space-y-5">
+                        <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-3xl p-10 text-center bg-slate-50 transition hover:border-yellow-500 group cursor-pointer">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-300 group-hover:text-yellow-500 mb-4 transition"></i>
+                            <p class="text-xs text-gray-500 font-bold italic uppercase">Glissez ou cliquez pour ajouter 4 photos max</p>
+                            <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
+                        </div>
+                        <div id="preview" class="flex flex-wrap gap-2 justify-center"></div>
+
+                        <div class="bg-blue-50 p-6 rounded-3xl border border-blue-100 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-sm font-black text-blue-900 uppercase italic">Devenir Partenaire Certifié</span>
+                                <input type="checkbox" id="check-certify" class="w-6 h-6 accent-blue-600" onchange="toggleCertifyInputs()">
+                            </div>
+                            <div id="certify-inputs" class="hidden space-y-3">
+                                <input type="tel" id="post-airtel-phone" placeholder="Numéro de l'expéditeur Airtel Money" class="w-full p-3 bg-white border rounded-xl outline-none text-sm">
+                                <input type="text" id="post-airtel-id" placeholder="ID Transaction Airtel Money (25.000 FCFA)" class="w-full p-3 bg-white border rounded-xl outline-none text-sm">
+                                <input type="tel" id="post-tel-owner" placeholder="Numéro de Téléphone Professionnel" class="w-full p-3 bg-white border rounded-xl outline-none text-sm">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" id="btn-post-exec" class="md:col-span-2 w-full bg-slate-900 text-white py-5 rounded-3xl font-black text-xl hover:bg-black shadow-xl transition active:scale-95">
+                        PUBLIER SUR GABONBELLE IMMO
+                    </button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-slate-900 text-gray-500 py-12 mt-20 border-t border-yellow-600/20 text-center">
+        <p class="text-xs uppercase tracking-[0.3em]">Gabonbelle Immo © 2026 | Libreville, Gabon</p>
+    </footer>
+
+    <script>
+        // --- CONFIGURATION & ÉTAT ---
+        const API_URL = "https://script.google.com/macros/s/AKfycbw2U6BSdxRrdHGFCqa557xQoYM0AKqYyAXQu_O1w90FomvW5mbMgxFKzDPnVqnMjLDq/exec";
+        let currentUser = null;
+        let allProperties = [];
+        let base64Files = [];
+
+        // --- APPLI CUSTOM MODALS ALERTS SYSTEM ---
+        function showSuccessModal(message) {
+            document.getElementById('modal-success-msg').innerText = message;
+            document.getElementById('modal-success').classList.remove('hidden');
+        }
+        function closeSuccessModal() {
+            document.getElementById('modal-success').classList.add('hidden');
+        }
+        function showErrorModal(message) {
+            document.getElementById('modal-error-msg').innerText = message;
+            document.getElementById('modal-error').classList.remove('hidden');
+        }
+        function closeErrorModal() {
+            document.getElementById('modal-error').classList.add('hidden');
+        }
+
+        // --- INITIALISATION APPLI ---
+        window.addEventListener('DOMContentLoaded', () => {
+            initDragAndDrop();
+            checkLocalStorageAuth();
+            loadProperties();
+        });
+
+        // --- HANDLER GESTIONNAIRE D'API REQUETES ---
+        async function apiCall(action, data = {}) {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action, data })
+            });
+            const res = await response.json();
+            if (!res.success) throw new Error(res.error);
+            return res.data;
+        }
+
+        // --- COMPORTEMENT AUTHENTIFICATION ---
+        function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
+        function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
+        
+        function toggleAuthOrDash() {
+            if(currentUser) {
+                showSection('dashboard');
+            } else {
+                openLoginModal();
+            }
+        }
+
+        function switchAuthTab(tab) {
+            const loginBtn = document.getElementById('tab-login-btn');
+            const regBtn = document.getElementById('tab-register-btn');
+            const loginForm = document.getElementById('form-login');
+            const regForm = document.getElementById('form-register');
+
+            if (tab === 'login') {
+                loginBtn.className = "flex-1 pb-3 border-b-2 border-slate-900 text-slate-900";
+                regBtn.className = "flex-1 pb-3 border-b-2 border-transparent text-gray-400 hover:text-slate-900";
+                loginForm.classList.remove('hidden');
+                regForm.classList.add('hidden');
+            } else {
+                regBtn.className = "flex-1 pb-3 border-b-2 border-slate-900 text-slate-900";
+                loginBtn.className = "flex-1 pb-3 border-b-2 border-transparent text-gray-400 hover:text-slate-900";
+                regForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+            }
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            const btn = document.getElementById('btn-login-exec');
+
+            if(!email || !pass) return showErrorModal("Veuillez remplir les champs");
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Vérification...';
+            try {
+                const user = await apiCall('authenticate', { email, pass });
+                if(user) {
+                    saveAuthSession(user);
+                    closeLoginModal();
+                    showSuccessModal("Ravi de vous revoir " + user.name + " !");
+                    showSection('dashboard');
+                } else {
+                    showErrorModal("Identifiants incorrects.");
+                }
+            } catch (e) {
+                showErrorModal("Erreur de connexion au serveur.");
+            }
+            btn.innerText = "SE CONNECTER";
+        }
+
+        async function handleRegister() {
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const phone = document.getElementById('reg-phone').value;
+            const pass = document.getElementById('reg-pass').value;
+            const btn = document.getElementById('btn-register-exec');
+
+            if(!name || !email || !phone || !pass) return showErrorModal("Veuillez remplir tous les champs");
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Inscription en cours...';
+            try {
+                const user = await apiCall('register', { name, email, phone, pass });
+                if(user) {
+                    closeLoginModal();
+                    showSuccessModal("Inscription réussie avec succès !");
+                    saveAuthSession(user);
+                    showSection('dashboard');
+                }
+            } catch (e) {
+                showErrorModal(e.message || "Erreur lors de l'inscription.");
+            }
+            btn.innerText = "S'INSCRIRE";
+        }
+
+        function saveAuthSession(user) {
+            currentUser = user;
+            localStorage.setItem('gabonbelle_user', JSON.stringify(user));
+            updateUIForAuth();
+        }
+
+        function checkLocalStorageAuth() {
+            const session = localStorage.getItem('gabonbelle_user');
+            if(session) {
+                currentUser = JSON.parse(session);
+                updateUIForAuth();
+            }
+        }
+
+        function updateUIForAuth() {
+            if(currentUser) {
+                document.getElementById('nav-auth-btn').innerHTML = `<i class="fas fa-user-check text-yellow-500 mr-2"></i> ${currentUser.name}`;
+                document.getElementById('dash-user-name').innerText = currentUser.name;
+                document.getElementById('prof-name-input').value = currentUser.name;
+                document.getElementById('prof-email').innerText = currentUser.email;
+                document.getElementById('prof-tel').value = currentUser.phone || '';
+                
+                // Gestion Image Profil
+                const imgPhoto = document.getElementById('dash-user-photo');
+                const placeholderPhoto = document.getElementById('dash-user-photo-placeholder');
+                if(currentUser.image && currentUser.image.startsWith('http')) {
+                    imgPhoto.src = currentUser.image;
+                    imgPhoto.classList.remove('hidden');
+                    placeholderPhoto.classList.add('hidden');
+                } else {
+                    imgPhoto.classList.add('hidden');
+                    placeholderPhoto.classList.remove('hidden');
+                }
+
+                // Configuration statut & Badges
+                const badge = document.getElementById('dash-badge-icon');
+                const statusTxt = document.getElementById('dash-user-status');
+                if(currentUser.status === 'Blue') {
+                    badge.className = "absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-blue-500 text-white";
+                    statusTxt.innerText = "Membre Certifié Blue";
+                    statusTxt.className = "text-[10px] font-black uppercase tracking-widest mt-1 text-blue-500";
+                    document.getElementById('premium-banner').classList.remove('hidden');
+                } else if(currentUser.status === 'Boost') {
+                    badge.className = "absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-amber-500 text-slate-900";
+                    statusTxt.innerText = "Partenaire Premium Boost";
+                    statusTxt.className = "text-[10px] font-black uppercase tracking-widest mt-1 text-yellow-600";
+                    document.getElementById('premium-banner').classList.remove('hidden');
+                } else {
+                    badge.className = "absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-gray-400 text-white";
+                    statusTxt.innerText = "Compte Standard Gratuit";
+                    statusTxt.className = "text-[10px] font-black uppercase tracking-widest mt-1 text-gray-400";
+                    document.getElementById('premium-banner').classList.add('hidden');
+                }
+                loadDashboardData();
+            } else {
+                document.getElementById('nav-auth-btn').innerHTML = `<i class="fas fa-user-circle mr-2"></i> Connexion`;
+            }
+        }
+
+        // --- GESTION PHOTO DE PROFIL COMPLÈTE ---
+        function triggerProfilePhotoUpload() {
+            document.getElementById('profilePhotoInput').click();
+        }
+
+        function handleProfilePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const base64Data = e.target.result.split(',')[1];
+                try {
+                    showSuccessModal("Téléchargement de votre photo de profil...");
+                    const updatedUser = await apiCall('updateProfilePhoto', {
+                        email: currentUser.email,
+                        filename: file.name,
+                        mimeType: file.type,
+                        base64: base64Data
+                    });
+                    
+                    if(updatedUser && updatedUser.image) {
+                        currentUser.image = updatedUser.image;
+                        saveAuthSession(currentUser);
+                        showSuccessModal("Photo de profil mise à jour avec succès !");
+                    }
+                } catch(err) {
+                    showErrorModal("Erreur lors de la mise à jour de la photo de profil.");
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('gabonbelle_user');
+            updateUIForAuth();
+            showSection('home');
+            window.location.reload();
+        }
+
+        // --- NAVIGATION INTERNE ---
+        function showSection(sectionId) {
+            document.getElementById('home-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.add('hidden');
+            document.getElementById('post-property-section').classList.add('hidden');
+
+            if(sectionId === 'home') document.getElementById('home-section').classList.remove('hidden');
+            if(sectionId === 'dashboard') document.getElementById('dashboard-section').classList.remove('hidden');
+            if(sectionId === 'post') document.getElementById('post-property-section').classList.remove('hidden');
+        }
+
+        function switchDashTab(tabId) {
+            document.getElementById('tab-activities').classList.add('hidden');
+            document.getElementById('tab-ads').classList.add('hidden');
+            document.getElementById('tab-payments').classList.add('hidden');
+            document.getElementById('tab-profile').classList.add('hidden');
+
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+        }
+
+        function checkAuthAndPost() {
+            if(!currentUser) {
+                openLoginModal();
+            } else {
+                showSection('post');
+            }
+        }
+
+        // --- CHARGEMENT DES DONNÉES DU DASHBOARD ET DES STATS ---
+        async function loadDashboardData() {
+            if(!currentUser) return;
+            try {
+                const stats = await apiCall('getUserStats', { email: currentUser.email });
+                if(stats) {
+                    document.getElementById('stat-views').innerText = Number(stats.views || 0).toLocaleString();
+                    document.getElementById('stat-leads').innerText = Number(stats.leads || 0).toLocaleString();
+                    document.getElementById('stat-comm').innerHTML = `${Number(stats.commissions || 0).toLocaleString()} <small class="text-sm">FCFA</small>`;
+                }
+                loadUserAds();
+            } catch(e) { console.error("Erreur stats", e); }
+        }
+
+        async function loadUserAds() {
+            const list = document.getElementById('user-ads-list');
+            try {
+                const ads = await apiCall('getUserAds', { email: currentUser.email });
+                list.innerHTML = ads.length ? '' : '<p class="text-gray-400 italic">Aucune annonce enregistrée.</p>';
+                ads.forEach(ad => {
+                    list.innerHTML += `
+                        <div class="p-4 bg-slate-50 rounded-2xl border flex justify-between items-center shadow-sm">
+                            <b>${ad.title}</b> 
+                            <span class="font-bold text-slate-700">${Number(ad.price).toLocaleString()} FCFA</span>
+                        </div>`;
+                });
+            } catch(e) {}
+        }
+
+        async function updateProfile() {
+            const name = document.getElementById('prof-name-input').value;
+            const phone = document.getElementById('prof-tel').value;
+            if(!name || !phone) return showErrorModal("Veuillez remplir les informations requises.");
+
+            try {
+                const res = await apiCall('updateProfile', { email: currentUser.email, name, phone });
+                if(res) {
+                    currentUser.name = name;
+                    currentUser.phone = phone;
+                    saveAuthSession(currentUser);
+                    showSuccessModal("Profil mis à jour !");
+                }
+            } catch(e) { showErrorModal("Impossible de sauvegarder."); }
+        }
+
+        async function requestUpgrade(type) {
+            let phone, txId;
+            if(type === 'Blue') {
+                phone = document.getElementById('pay-airtel-phone-1').value;
+                txId = document.getElementById('pay-airtel-id-1').value;
+            } else {
+                phone = document.getElementById('pay-airtel-phone-2').value;
+                txId = document.getElementById('pay-airtel-id-2').value;
+            }
+
+            if(!phone || !txId) return showErrorModal("Veuillez renseigner le numéro et l'ID de paiement.");
+
+            try {
+                await apiCall('requestUpgrade', { email: currentUser.email, type, phone, txId });
+                showSuccessModal("Votre demande de certification a bien été transmise à la validation !");
+            } catch(e) { showErrorModal("Erreur lors de la soumission."); }
+        }
+
+        // --- TRAITEMENT DU FORMULAIRE DE PUBLICATION ---
+        function toggleCertifyInputs() {
+            const box = document.getElementById('check-certify');
+            document.getElementById('certify-inputs').classList.toggle('hidden', !box.checked);
+        }
+
+        function togglePostSubCat() {
+            const type = document.getElementById('post-type').value;
+            const catSelect = document.getElementById('post-cat');
+            if(type === 'Terrain') {
+                catSelect.innerHTML = '<option value="Terrain">Terrain Résidentiel</option><option value="Terrain">Terrain Commercial</option>';
+            } else {
+                catSelect.innerHTML = '<option value="Maison">Maison / Villa</option><option value="Appartement">Appartement</option><option value="Chambre">Chambre</option>';
+            }
+        }
+
+        function initDragAndDrop() {
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('fileInput');
+
+            dropZone.addEventListener('click', () => fileInput.click());
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+                handleFiles(e.dataTransfer.files);
+            });
+            fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+        }
+
+        function handleFiles(files) {
+            const preview = document.getElementById('preview');
+            const fileArr = Array.from(files).slice(0, 4);
+            
+            fileArr.forEach(file => {
+                if(!file.type.startsWith('image/')) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    base64Files.push(e.target.result.split(',')[1]);
+                    const div = document.createElement('div');
+                    div.className = "relative w-20 h-20 border rounded-xl overflow-hidden shadow-md";
+                    div.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+                    preview.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        document.getElementById('propertyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-post-exec');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publication en cours...';
+            btn.disabled = true;
+
+            const payload = {
+                email: currentUser.email,
+                type: document.getElementById('post-type').value,
+                category: document.getElementById('post-cat').value,
+                ville: document.getElementById('post-ville').value,
+                title: document.getElementById('post-title').value,
+                price: document.getElementById('post-price').value,
+                images: base64Files,
+                isCertify: document.getElementById('check-certify').checked,
+                certifPhone: document.getElementById('post-airtel-phone').value || '',
+                certifTxId: document.getElementById('post-airtel-id').value || '',
+                ownerPhone: document.getElementById('post-tel-owner').value || ''
+            };
+
+            try {
+                await apiCall('submitPost', payload);
+                showSuccessModal("Félicitations, votre annonce est publiée !");
+                document.getElementById('propertyForm').reset();
+                document.getElementById('preview').innerHTML = '';
+                base64Files = [];
+                showSection('home');
+                loadProperties();
+            } catch(err) {
+                showErrorModal("Erreur lors de la publication de l'annonce.");
+            }
+            btn.innerText = "PUBLIER SUR GABONBELLE IMMO";
+            btn.disabled = false;
+        });
+
+        // --- CATALOGUE, FILTRES ET AFFICHAGE ---
+        function toggleSubCat() {
+            const type = document.getElementById('filter-type').value;
+            const sub = document.getElementById('filter-subcat');
+            if(type === 'Terrain') {
+                sub.innerHTML = '<option value="">Toutes les Catégories</option><option value="Terrain">Terrain</option>';
+            } else {
+                sub.innerHTML = '<option value="">Toutes les Catégories</option><option value="Chambre">Chambre</option><option value="Appartement">Appartement</option><option value="Maison">Maison</option>';
+            }
+        }
+
+        async function loadProperties() {
+            try {
+                allProperties = await apiCall('getAllProperties');
+                renderGrid(allProperties);
+                document.getElementById('properties-loader').classList.add('hidden');
+                document.getElementById('property-grid').classList.remove('hidden');
+            } catch(e) {
+                showErrorModal("Impossible de récupérer le catalogue.");
+            }
+        }
+
+        function renderGrid(props) {
+            const grid = document.getElementById('property-grid');
+            const sGrid = document.getElementById('sponsored-grid');
+            const sSec = document.getElementById('sponsored-section');
+            
+            grid.innerHTML = '';
+            sGrid.innerHTML = '';
+            let hasSpon = false;
+
+            props.forEach(p => {
+                const imgUrl = (p.images && p.images.length > 0) ? p.images[0] : 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=500&q=80';
+                const isPremium = p.status === 'Blue' || p.status === 'Boost';
+                
+                const cardHtml = `
+                    <div class="bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100 property-card flex flex-col justify-between">
+                        <div class="relative h-56 bg-slate-100">
+                            <img src="${imgUrl}" class="w-full h-full object-cover">
+                            <span class="absolute top-4 left-4 text-xs font-black uppercase tracking-wider bg-slate-900 text-white px-4 py-1.5 rounded-full shadow-md">${p.type}</span>
+                            ${isPremium ? `<span class="absolute top-4 right-4 text-xs font-black uppercase tracking-wider gold-gradient text-slate-900 px-4 py-1.5 rounded-full shadow-md"><i class="fas fa-star"></i> VIP</span>` : ''}
+                        </div>
+                        <div class="p-6 flex-1 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                                    <span>${p.category} • ${p.ville}</span>
+                                    ${p.status === 'Blue' ? '<span class="blue-verify"><i class="fas fa-check-circle"></i> Certifié</span>' : ''}
+                                </div>
+                                <h4 class="font-black text-xl text-slate-900 leading-snug mb-3">${p.title}</h4>
+                            </div>
+                            <div class="pt-4 border-t flex justify-between items-center mt-4">
+                                <span class="text-xl font-black tracking-tight text-slate-900">${Number(p.price).toLocaleString()} <small class="text-xs font-bold text-gray-500">FCFA</small></span>
+                                <button onclick="openInterestModal('${p.id}', '${p.title.replace(/'/g, "\\'")}')" class="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-black transition">Voir Contact</button>
+                            </div>
+                        </div>
+                    </div>`;
+
+                if(p.status === 'Boost') {
+                    sGrid.innerHTML += cardHtml;
+                    hasSpon = true;
+                } else {
+                    grid.innerHTML += cardHtml;
+                }
+            });
+
+            sSec.classList.toggle('hidden', !hasSpon);
+            if(!props.length) {
+                grid.innerHTML = '<p class="text-center text-gray-400 italic py-12 md:col-span-3">Aucun bien ne correspond à vos critères.</p>';
+            }
+        }
+
+        function openInterestModal(id, title) {
+            document.getElementById('interest-prop-id').value = id;
+            document.getElementById('interest-prop-title').innerText = title;
+            if(currentUser) {
+                document.getElementById('int-name').value = currentUser.name;
+                document.getElementById('int-email').value = currentUser.email;
+                document.getElementById('int-tel').value = currentUser.phone || '';
+            }
+            document.getElementById('interest-modal').classList.remove('hidden');
+        }
+
+        function closeInterestModal() {
+            document.getElementById('interest-modal').classList.add('hidden');
+        }
+
+        async function submitInterest() {
+            const data = {
+                propId: document.getElementById('interest-prop-id').value,
+                propTitle: document.getElementById('interest-prop-title').innerText,
+                name: document.getElementById('int-name').value,
+                tel: document.getElementById('int-tel').value,
+                email: document.getElementById('int-email').value,
+                timestamp: new Date().toLocaleString()
+            };
+            if(!data.name || !data.tel) return showErrorModal("Veuillez renseigner les champs requis.");
+            try {
+                await apiCall('saveInterest', data);
+                showSuccessModal("Votre intérêt pour ce bien a bien été transmis au vendeur !");
+                closeInterestModal();
+            } catch (e) { 
+                showErrorModal("Erreur lors de l'envoi."); 
+            }
+        }
+
+        // --- FILTRES DU SYSTEME ---
+        function applyFilters() {
+            const type = document.getElementById('filter-type').value;
+            const ville = document.getElementById('filter-ville').value;
+            const cat = document.getElementById('filter-subcat').value;
+
+            let filtered = allProperties;
+            if(type) filtered = filtered.filter(p => p.type === type);
+            if(ville) filtered = filtered.filter(p => p.ville === ville);
+            if(cat) filtered = filtered.filter(p => p.category === cat);
+
+            document.getElementById('catalogue-title').innerText = "Résultats de la recherche";
+            document.getElementById('btn-show-all').classList.remove('hidden');
+            renderGrid(filtered);
+        }
+
+        function filterQuick(type) {
+            document.getElementById('filter-type').value = type;
+            toggleSubCat();
+            applyFilters();
+        }
+
+        function filterVerifiedOnly() {
+            let filtered = allProperties.filter(p => p.status === 'Blue' || p.status === 'Boost');
+            document.getElementById('catalogue-title').innerText = "Biens Certifiés & Partenaires";
+            document.getElementById('btn-show-all').classList.remove('hidden');
+            renderGrid(filtered);
+        }
+
+        function resetFilters() {
+            document.getElementById('filter-type').value = '';
+            document.getElementById('filter-ville').value = '';
+            document.getElementById('filter-subcat').value = '';
+            document.getElementById('catalogue-title').innerText = "Dernières Opportunités";
+            document.getElementById('btn-show-all').classList.add('hidden');
+            renderGrid(allProperties);
+        }
+    </script>
+</body>
+</html>
