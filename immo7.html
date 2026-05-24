@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gabonbelle Immobilier | Investissement & Prestige</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .gold-gradient { background: linear-gradient(135deg, #d4af37 0%, #f9e27d 100%); }
+        .blue-verify { color: #1DA1F2; }
+        .hidden { display: none; }
+        .property-card { transition: all 0.4s ease; }
+        .property-card:hover { transform: translateY(-8px); }
+        .drag-over { border-color: #d4af37 !important; background-color: #fffbeb !important; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-900">
+
+    <div id="modal-success" class="fixed inset-0 bg-black/60 z-[200] hidden flex items-center justify-center p-4 animate-fade-in">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border border-emerald-100">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 mb-2">Opération réussie !</h3>
+            <p id="modal-success-msg" class="text-sm text-gray-500 italic mb-6">Action effectuée avec succès.</p>
+            <button onclick="closeSuccessModal()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition">Continuer</button>
+        </div>
+    </div>
+
+    <div id="modal-error" class="fixed inset-0 bg-black/60 z-[200] hidden flex items-center justify-center p-4 animate-fade-in">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border border-rose-100">
+             <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 mb-2">Une erreur est survenue</h3>
+            <p id="modal-error-msg" class="text-sm text-gray-500 italic mb-6">Impossible de finaliser l'action.</p>
+            <button onclick="closeErrorModal()" class="w-full bg-rose-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-rose-600/20 hover:bg-rose-700 transition">Fermer</button>
+        </div>
+    </div>
+
+    <div id="property-detail-modal" class="fixed inset-0 bg-black/80 z-[150] hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl relative my-8">
+            <button onclick="closePropertyDetailModal()" class="absolute top-4 right-4 bg-black/60 hover:bg-black text-white w-10 h-10 rounded-full flex items-center justify-center z-10 transition">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="relative bg-slate-900 h-72 w-full flex items-center justify-center">
+                <img id="detail-modal-img" src="" class="h-full w-full object-cover">
+                <button onclick="prevDetailPhoto()" class="absolute left-4 bg-black/50 hover:bg-black text-white w-10 h-10 rounded-full flex items-center justify-center transition">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button onclick="nextDetailPhoto()" class="absolute right-4 bg-black/50 hover:bg-black text-white w-10 h-10 rounded-full flex items-center justify-center transition">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <div id="detail-modal-counter" class="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 text-xs rounded-full font-bold"></div>
+            </div>
+
+            <div class="p-8 space-y-6">
+                <div>
+                    <span id="detail-modal-type" class="px-3 py-1 bg-slate-100 text-slate-800 rounded-full text-xs font-bold uppercase tracking-wider"></span>
+                    <h3 id="detail-modal-title" class="text-2xl font-black text-slate-900 mt-3"></h3>
+                    <p id="detail-modal-price" class="text-2xl font-black text-yellow-600 mt-1"></p>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 border-t border-b py-4 text-sm font-medium text-gray-600">
+                    <div class="flex items-center"><i class="fas fa-map-marker-alt text-slate-400 mr-2.5 w-4"></i> Ville : <span id="detail-modal-ville" class="ml-1 text-slate-900 font-bold"></span></div>
+                    <div class="flex items-center"><i class="fas fa-tags text-slate-400 mr-2.5 w-4"></i> Catégorie : <span id="detail-modal-cat" class="ml-1 text-slate-900 font-bold"></span></div>
+                    <div class="flex items-center"><i class="fas fa-calendar-alt text-slate-400 mr-2.5 w-4"></i> Publié le : <span id="detail-modal-date" class="ml-1 text-slate-900 font-bold"></span></div>
+                    <div class="flex items-center"><i class="fas fa-eye text-slate-400 mr-2.5 w-4"></i> Vues cumulées : <span id="detail-modal-views" class="ml-1 text-slate-900 font-bold"></span></div>
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <img id="detail-modal-avatar" src="" class="w-10 h-10 rounded-full object-cover border bg-slate-200">
+                        <div>
+                            <p id="detail-modal-owner" class="font-bold text-slate-900 text-sm"></p>
+                            <p class="text-xs text-gray-400 italic">Propriétaire de l'annonce</p>
+                        </div>
+                    </div>
+                    <a id="detail-modal-phone" href="" class="bg-slate-900 text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center shadow-md"><i class="fas fa-phone mr-2"></i> Contacter</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bg-slate-900 text-white p-4 shadow-2xl sticky top-0 z-50 border-b border-yellow-600/30">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-black tracking-tighter cursor-pointer" onclick="showSection('home')">
+                GABONBELLE <span class="text-yellow-500 italic text-3xl">IMMO</span>
+            </h1>
+            
+            <div class="hidden md:flex space-x-8 font-medium">
+                <a href="javascript:void(0)" onclick="filterQuick('Vente')" class="hover:text-yellow-500 transition">Acheter</a>
+                <a href="javascript:void(0)" onclick="filterQuick('Location')" class="hover:text-yellow-500 transition">Louer</a>
+                <a href="javascript:void(0)" onclick="filterQuick('Terrain')" class="hover:text-yellow-500 transition">Terrains</a>
+                <button id="nav-auth-btn" onclick="openLoginModal()" class="hover:text-yellow-500 flex items-center">
+                    <i class="fas fa-user-circle mr-2"></i> Connexion
+                </button>
+            </div>
+            <button onclick="checkAuthAndPost()" class="gold-gradient text-slate-900 px-6 py-2 rounded-full font-bold shadow-lg hover:scale-105 transition transform">
+                POSTER UNE ANNONCE
+            </button>
+        </div>
+    </nav>
+
+    <div id="login-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full relative">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-black"><i class="fas fa-times"></i></button>
+            
+            <div class="flex border-b mb-6 font-black text-center text-sm uppercase tracking-wider">
+                <button id="tab-login-btn" onclick="switchAuthTab('login')" class="flex-1 pb-3 border-b-2 border-slate-900 text-slate-900">Connexion</button>
+                <button id="tab-register-btn" onclick="switchAuthTab('register')" class="flex-1 pb-3 border-b-2 border-transparent text-gray-400 hover:text-slate-900">Inscription</button>
+            </div>
+
+            <div id="form-login" class="space-y-4">
+                <input type="email" id="login-email" placeholder="Email" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <input type="password" id="login-pass" placeholder="Mot de passe" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <button onclick="handleLogin()" id="btn-login-exec" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-black transition">SE CONNECTER</button>
+            </div>
+
+            <div id="form-register" class="space-y-4 hidden">
+                <input type="text" id="reg-name" placeholder="Nom complet" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <input type="email" id="reg-email" placeholder="Adresse Email" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <input type="tel" id="reg-phone" placeholder="Numéro de téléphone" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <input type="password" id="reg-pass" placeholder="Mot de passe" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <button onclick="handleRegister()" id="btn-register-exec" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-black transition">S'INSCRIRE</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="interest-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full">
+            <h3 class="text-2xl font-black mb-2">Je suis intéressé</h3>
+            <p id="interest-prop-title" class="text-yellow-600 font-bold mb-6 text-sm"></p>
+            <div class="space-y-4">
+                <input type="hidden" id="interest-prop-id">
+                <input type="text" id="int-name" placeholder="Votre Nom complet" class="w-full p-4 bg-slate-50 border rounded-xl outline-none">
+                <input type="tel" id="int-tel" placeholder="Votre Numéro (Airtel Money/Moov)" class="w-full p-4 bg-slate-50 border rounded-xl outline-none">
+                <input type="email" id="int-email" placeholder="Votre Email" class="w-full p-4 bg-slate-50 border rounded-xl outline-none">
+                <div class="flex space-x-2">
+                    <button onclick="submitInterest()" id="btn-int-exec" class="flex-1 bg-slate-900 text-white py-4 rounded-xl font-bold">ENVOYER</button>
+                    <button onclick="closeInterestModal()" class="px-6 py-4 border rounded-xl font-bold">ANNULER</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main id="main-content">
+        <section id="home-section" class="py-8">
+            <header class="bg-slate-900 text-white py-12 px-4 text-center rounded-b-[3rem] shadow-2xl mb-12">
+                <h2 class="text-4xl font-extrabold mb-8">L'Immobilier au Gabon</h2>
+                <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-4 text-slate-800">
+                    <select id="filter-type" class="p-3 border rounded-lg" onchange="toggleSubCat()">
+                        <option value="">Tous les types</option>
+                        <option value="Location">Location</option>
+                        <option value="Vente">Vente</option>
+                        <option value="Terrain">Terrain</option>
+                    </select>
+                    <select id="filter-ville" class="p-3 border rounded-lg">
+                        <option value="">Toutes les Villes</option>
+                        <option value="Libreville">Libreville</option>
+                        <option value="Akanda">Akanda</option>
+                        <option value="Port-Gentil">Port-Gentil</option>
+                        <option value="Ntoum">Ntoum</option>
+                    </select>
+                    <select id="filter-subcat" class="p-3 border rounded-lg">
+                        <option value="">Toutes les Catégories</option>
+                        <option value="Chambre">Chambre</option>
+                        <option value="Appartement">Appartement</option>
+                        <option value="Maison">Maison</option>
+                    </select>
+                    <button onclick="applyFilters()" class="bg-slate-900 text-white rounded-lg font-bold hover:bg-black transition">
+                         <i class="fas fa-search"></i> RECHERCHER
+                    </button>
+                </div>
+            </header>
+
+            <div class="container mx-auto px-4 space-y-12">
+                <div id="sponsored-section" class="hidden">
+                    <div class="flex items-center space-x-2 mb-6">
+                        <i class="fas fa-fire text-red-500 text-xl animate-pulse"></i>
+                        <h3 class="text-2xl font-black italic tracking-tight uppercase text-slate-900">À la une (Sponsorisé)</h3>
+                    </div>
+                    <div id="sponsored-grid" class="grid grid-cols-1 md:grid-cols-3 gap-10"></div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-end mb-8 border-b pb-4">
+                        <h3 id="catalogue-title" class="text-2xl font-black italic">Dernières Opportunités</h3>
+                        <div class="flex space-x-3">
+                            <button id="btn-show-all" onclick="resetFilters()" class="hidden px-4 py-2 border rounded-full text-xs font-bold hover:bg-gray-100 uppercase tracking-tighter">Voir Tout</button>
+                            <button onclick="filterVerifiedOnly()" class="px-4 py-2 gold-gradient rounded-full text-xs font-black uppercase tracking-tighter shadow-md">Vérifiés Seulement</button>
+                        </div>
+                    </div>
+
+                    <div id="properties-loader" class="flex flex-col items-center justify-center py-16 space-y-4">
+                        <i class="fas fa-circle-notch fa-spin text-4xl text-yellow-500"></i>
+                        <p class="text-sm font-bold text-slate-500 italic tracking-wide">Recherche des meilleures opportunités au Gabon...</p>
+                    </div>
+
+                    <div id="property-grid" class="grid grid-cols-1 md:grid-cols-3 gap-10 hidden"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="dashboard-section" class="container mx-auto px-4 py-12 hidden">
+            <div class="flex flex-col md:flex-row gap-8">
+                <aside class="w-full md:w-1/4 bg-white rounded-3xl shadow-xl p-6 border border-gray-200 h-fit">
+                     <div class="text-center mb-8">
+                        <div class="w-24 h-24 bg-slate-200 rounded-full mx-auto mb-4 flex items-center justify-center relative border-4 border-white shadow-lg overflow-hidden group">
+                            <img id="dash-avatar-img" src="" class="w-full h-full object-cover hidden">
+                            <i id="dash-avatar-placeholder" class="fas fa-user text-4xl text-slate-400"></i>
+                        </div>
+                        <h4 id="dash-user-name" class="font-bold text-xl">Utilisateur</h4>
+                        <p id="dash-user-status" class="text-[10px] font-black uppercase tracking-widest mt-1"></p>
+                    </div>
+                     <nav class="space-y-2">
+                        <button onclick="switchDashTab('activities')" class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 font-bold transition flex items-center"><i class="fas fa-chart-pie mr-3"></i> Activités</button>
+                        <button onclick="switchDashTab('ads')" class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 font-bold transition flex items-center"><i class="fas fa-layer-group mr-3"></i> Mes Annonces</button>
+                        <button onclick="switchDashTab('interests')" class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 font-bold transition flex items-center text-yellow-600"><i class="fas fa-heart mr-3"></i> Intéressés</button>
+                        <button onclick="switchDashTab('payments')" class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 font-bold transition flex items-center"><i class="fas fa-credit-card mr-3"></i> Paiements & Stats</button>
+                        <button onclick="switchDashTab('profile')" class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 font-bold transition flex items-center"><i class="fas fa-id-card mr-3"></i> Infos Personnelles</button>
+                        <button onclick="logout()" class="w-full text-left p-4 rounded-2xl hover:bg-red-50 text-red-500 font-bold border-t mt-4 transition flex items-center"><i class="fas fa-power-off mr-3"></i> Déconnexion</button>
+                    </nav>
+                </aside>
+
+                <div class="flex-1">
+                    <div id="tab-activities" class="space-y-6">
+                        <div id="premium-banner" class="hidden gold-gradient p-8 rounded-3xl shadow-xl flex justify-between items-center text-slate-900">
+                            <div>
+                                <h3 class="text-2xl font-black">VOTRE STATUT EST ACTIF</h3>
+                                <p class="font-medium italic">Visibilité maximale garantie ce mois.</p>
+                            </div>
+                            <i class="fas fa-crown text-4xl opacity-50"></i>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
+                                <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-2">Vues Annonces</p>
+                                <p id="stat-views" class="text-4xl font-black italic">0</p>
+                            </div>
+                            <div class="bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
+                                <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-2">Personnes Intéressées</p>
+                                <p id="stat-leads" class="text-4xl font-black italic">0</p>
+                            </div>
+                            <div class="bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
+                                <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-2">Commission Total</p>
+                                <p id="stat-comm" class="text-4xl font-black italic">0 <small class="text-sm">FCFA</small></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-ads" class="hidden bg-white p-8 rounded-3xl shadow-lg">
+                        <h3 class="text-2xl font-black mb-6">Gestion des Biens</h3>
+                        <div id="user-ads-list" class="space-y-4"></div>
+                    </div>
+
+                    <div id="tab-interests" class="hidden bg-white p-8 rounded-3xl shadow-lg">
+                        <h3 class="text-2xl font-black mb-6">Formulaires Envoyés (Suivi de mes intérêts)</h3>
+                        <div id="user-interests-list" class="space-y-4"></div>
+                    </div>
+
+                    <div id="tab-payments" class="hidden bg-white p-8 rounded-3xl shadow-lg">
+                        <h3 class="text-2xl font-black mb-8 italic text-yellow-600">Services Premium & Paiement</h3>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div class="bg-slate-50 p-6 rounded-3xl border border-gray-200">
+                                <h4 class="font-black text-lg mb-2 uppercase">Certification Blue</h4>
+                                <p class="text-sm text-gray-500 mb-6 italic leading-relaxed">Affiche votre nom réel, votre numéro et vous place en tête de recherche.</p>
+                                 <p class="text-3xl font-black mb-6">25.000 <small class="text-xs">FCFA / mois</small></p>
+                                <div class="space-y-3">
+                                    <input type="tel" id="pay-airtel-phone-1" placeholder="Numéro de l'expéditeur Airtel" class="w-full p-4 border rounded-2xl outline-none bg-white">
+                                    <input type="text" id="pay-airtel-id-1" placeholder="ID Transaction Airtel Money" class="w-full p-4 border rounded-2xl outline-none bg-white">
+                                    <button onclick="requestUpgrade('Blue')" class="w-full gold-gradient py-4 rounded-2xl font-black text-sm shadow-lg uppercase tracking-widest">Activer via ID</button>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 p-6 rounded-3xl border border-gray-200">
+                                <h4 class="font-black text-lg mb-2 uppercase">Mise en avant (Boost)</h4>
+                                <p class="text-sm text-gray-500 mb-6 italic leading-relaxed">Faites briller votre annonce sur la page d'accueil pendant 7 jours.</p>
+                                 <p class="text-3xl font-black mb-6">10.000 <small class="text-xs">FCFA / boost</small></p>
+                                <div class="space-y-3">
+                                    <input type="tel" id="pay-airtel-phone-2" placeholder="Numéro de l'expéditeur Airtel" class="w-full p-4 border rounded-2xl outline-none bg-white">
+                                    <input type="text" id="pay-airtel-id-2" placeholder="ID Transaction Airtel Money" class="w-full p-4 border rounded-2xl outline-none bg-white">
+                                    <button onclick="requestUpgrade('Boost')" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-sm shadow-lg uppercase tracking-widest">Booster maintenant</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-profile" class="hidden bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
+                        <h3 class="text-2xl font-black mb-6 italic">Informations Personnelles</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="md:col-span-2 flex items-center space-x-6 bg-slate-50 p-4 rounded-2xl border">
+                                <div class="w-20 h-20 bg-slate-200 rounded-full overflow-hidden relative flex items-center justify-center border-2">
+                                    <img id="profile-preview-avatar" src="" class="w-full h-full object-cover hidden">
+                                    <i id="profile-preview-placeholder" class="fas fa-user text-3xl text-slate-400"></i>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-black uppercase text-gray-500 mb-1">Photo de profil</label>
+                                    <input type="file" id="avatarFileInput" accept="image/*" onchange="previewAvatar(event)" class="text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-900 file:text-white hover:file:bg-black cursor-pointer">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black uppercase text-gray-400 mb-2">Nom Complet</label>
+                                <input type="text" id="prof-name-input" class="w-full p-4 bg-slate-50 rounded-xl border font-bold outline-none focus:ring-2 focus:ring-yellow-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black uppercase text-gray-400 mb-2">Email (Non modifiable)</label>
+                                <p id="prof-email" class="p-4 bg-slate-100 rounded-xl border font-bold text-gray-500"></p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black uppercase text-gray-400 mb-2">Téléphone</label>
+                                <input type="text" id="prof-tel" class="w-full p-4 bg-slate-50 rounded-xl border font-bold outline-none focus:ring-2 focus:ring-yellow-500">
+                            </div>
+                            <div class="flex items-end">
+                                <button onclick="updateProfile()" id="btn-update-prof" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-black transition">Enregistrer les modifications</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="post-property-section" class="container mx-auto px-4 py-12 hidden">
+            <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl p-10 border border-gray-100">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-black text-slate-900 uppercase tracking-tighter">Publier une Propriété</h2>
+                    <p class="text-gray-400 italic">Prenez plusieurs photos claires pour captiver nos investisseurs.</p>
+                </div>
+                <form id="propertyForm" class="grid grid-cols-1 md:grid-cols-2 gap-8" onsubmit="handlePostSubmit(event)">
+                    <div class="space-y-5">
+                        <div>
+                            <label class="text-xs font-black uppercase text-gray-500">Type de bien</label>
+                            <select id="post-type" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none" onchange="togglePostSubCat()">
+                                <option value="Vente">À Vendre</option>
+                                <option value="Location">À Louer</option>
+                                <option value="Terrain">Terrain</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-black uppercase text-gray-500">Catégorie</label>
+                            <select id="post-cat" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                                <option value="Maison">Maison / Villa</option>
+                                <option value="Appartement">Appartement</option>
+                                <option value="Chambre">Chambre</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-black uppercase text-gray-500">Ville au Gabon</label>
+                            <select id="post-ville" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                                <option value="Libreville">Libreville</option>
+                                <option value="Akanda">Akanda</option>
+                                <option value="Port-Gentil">Port-Gentil</option>
+                                <option value="Ntoum">Ntoum</option>
+                            </select>
+                        </div>
+                        <input type="text" id="post-title" placeholder="Titre (ex: Superbe Studio Meublé)" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none" required>
+                        <input type="number" id="post-price" placeholder="Prix (FCFA)" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none" required>
+                    </div>
+                    <div class="space-y-5">
+                        <div id="drop-zone" onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-gray-300 rounded-3xl p-10 text-center bg-slate-50 transition hover:border-yellow-500 group cursor-pointer">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-300 group-hover:text-yellow-500 mb-4 transition"></i>
+                            <p class="text-xs text-gray-500 font-bold italic uppercase">Glissez ou cliquez pour ajouter des photos</p>
+                            <input type="file" id="fileInput" multiple accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+                        </div>
+                        <div id="preview" class="flex flex-wrap gap-3 justify-center"></div>
+                        
+                        <div class="bg-blue-50 p-6 rounded-3xl border border-blue-100 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-sm font-black text-blue-900 uppercase italic">Devenir Partenaire Certifié</span>
+                                <input type="checkbox" id="check-certify" class="w-6 h-6 accent-blue-600" onchange="toggleCertifyInputs()">
+                            </div>
+                            <div id="certify-inputs" class="hidden space-y-3">
+                                <input type="tel" id="post-airtel-phone" placeholder="Numéro de l'expéditeur Airtel Money" class="w-full p-3 bg-white border rounded-xl outline-none text-sm">
+                                <input type="text" id="post-airtel-id" placeholder="ID Transaction Airtel Money (25.000 FCFA)" class="w-full p-3 bg-white border rounded-xl outline-none text-sm">
+                                <input type="tel" id="post-tel-owner" placeholder="Numéro de Téléphone Professionnel" class="w-full p-3 bg-white border rounded-xl outline-none text-sm">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" id="btn-post-exec" class="md:col-span-2 w-full bg-slate-900 text-white py-5 rounded-3xl font-black text-xl hover:bg-black transition shadow-xl">SOUMETTRE L'ANNONCE</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/VOTRE_ID_SCRIPT/exec"; // Remplacer par votre URL de déploiement d'API exécutable
+        
+        let currentUser = null;
+        let allPropertiesCached = [];
+        let selectedUploadedImagesBase64 = [];
+        
+        // États du gestionnaire de carrousels globaux (Grilles)
+        let propertyCarouselStates = {}; 
+        
+        // États de la modale de détail active
+        let currentModalProperty = null;
+        let currentModalImageIndex = 0;
+
+        async function apiCall(action, data = {}) {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ action, data })
+            });
+            const res = await response.json();
+            if (!res.success) throw new Error(res.error || "Une erreur est survenue");
+            return res.data;
+        }
+
+        // --- ENREGISTREMENT PHOTO PROFIL AVEC BASE64 ---
+        function previewAvatar(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('profile-preview-avatar').src = e.target.result;
+                document.getElementById('profile-preview-avatar').classList.remove('hidden');
+                document.getElementById('profile-preview-placeholder').classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // --- ENREGISTREMENT ET SUPPRESSION DES PHOTOS PROPRIETES AVEC BOUTON X ---
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Str = e.target.result;
+                    selectedUploadedImagesBase64.push(base64Str);
+                    renderPhotoPreviews();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function renderPhotoPreviews() {
+            const container = document.getElementById('preview');
+            container.innerHTML = '';
+            selectedUploadedImagesBase64.forEach((imgData, index) => {
+                const div = document.createElement('div');
+                div.className = "relative w-20 h-20 rounded-xl border overflow-hidden shadow-sm";
+                div.innerHTML = `
+                    <img src="${imgData}" class="w-full h-full object-cover">
+                    <button type="button" onclick="removeSelectedPhoto(${index})" class="absolute top-1 right-1 bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shadow hover:bg-red-700 transition">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function removeSelectedPhoto(index) {
+            selectedUploadedImagesBase64.splice(index, 1);
+            renderPhotoPreviews();
+        }
+
+        // --- NAVIGATION INTERNE ---
+        function showSection(sectionId) {
+            document.getElementById('home-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.add('hidden');
+            document.getElementById('post-property-section').classList.add('hidden');
+            
+            if (sectionId === 'home') {
+                document.getElementById('home-section').classList.remove('hidden');
+                loadProperties();
+            } else if (sectionId === 'dashboard') {
+                document.getElementById('dashboard-section').classList.remove('hidden');
+                syncDashboardData();
+            } else if (sectionId === 'post') {
+                document.getElementById('post-property-section').classList.remove('hidden');
+            }
+        }
+
+        function switchDashTab(tabName) {
+            document.getElementById('tab-activities').classList.add('hidden');
+            document.getElementById('tab-ads').classList.add('hidden');
+            document.getElementById('tab-interests').classList.add('hidden');
+            document.getElementById('tab-payments').classList.add('hidden');
+            document.getElementById('tab-profile').classList.add('hidden');
+            
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+        }
+
+        // --- AFFICHAGE FLUX MAÎTRE ET CARROUSELS DANS LES GRILLES ---
+        async function loadProperties() {
+            try {
+                document.getElementById('properties-loader').classList.remove('hidden');
+                document.getElementById('property-grid').classList.add('hidden');
+                
+                const properties = await apiCall('getAllProperties');
+                allPropertiesCached = properties;
+                renderPropertiesGrid(properties);
+            } catch (e) {
+                showErrorModal("Erreur de chargement du catalogue.");
+            }
+        }
+
+        function renderPropertiesGrid(properties) {
+            document.getElementById('properties-loader').classList.add('hidden');
+            const grid = document.getElementById('property-grid');
+            const premiumGrid = document.getElementById('sponsored-grid');
+            
+            grid.innerHTML = '';
+            premiumGrid.innerHTML = '';
+            
+            const premiumProps = properties.filter(p => p.isPremium || p.ownerStatus === 'Blue');
+            const regularProps = properties.filter(p => !(p.isPremium || p.ownerStatus === 'Blue'));
+            
+            // On masque le bloc premium au début des opérations de recherche si demandé
+            document.getElementById('sponsored-section').classList.add('hidden');
+
+            premiumProps.forEach(p => { premiumGrid.appendChild(createPropertyCardElement(p)); });
+            regularProps.forEach(p => { grid.appendChild(createPropertyCardElement(p)); });
+            
+            grid.classList.remove('hidden');
+            // La section sponsorisée s'affiche uniquement une fois que tout le catalogue est chargé
+            if (premiumProps.length > 0) {
+                document.getElementById('sponsored-section').classList.remove('hidden');
+            }
+        }
+
+        function createPropertyCardElement(p) {
+            let imagesArray = [];
+            try { imagesArray = JSON.parse(p.img); } catch(e) { imagesArray = [p.img]; }
+            if (!Array.isArray(imagesArray) || imagesArray.length === 0) imagesArray = ['https://via.placeholder.com/600x400?text=Aucune+Image'];
+            
+            propertyCarouselStates[p.id] = { images: imagesArray, index: 0 };
+
+            const card = document.createElement('div');
+            card.className = "bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-xl property-card flex flex-col relative";
+            
+            // Rendu conditionnel des avatars des créateurs
+            let avatarMarkup = p.ownerAvatar 
+                ? `<img src="${p.ownerAvatar}" class="w-6 h-6 rounded-full object-cover border border-white shadow-sm">`
+                : `<div class="w-6 h-6 bg-slate-200 text-slate-500 rounded-full flex items-center justify-center text-[10px] border border-white shadow-sm"><i class="fas fa-user"></i></div>`;
+
+            card.innerHTML = `
+                <div class="relative h-64 w-full bg-slate-900 overflow-hidden flex items-center justify-center">
+                    <img id="carousel-img-${p.id}" src="${imagesArray[0]}" class="w-full h-full object-cover cursor-pointer" onclick="handleCardClick('${p.id}')">
+                    
+                    <button onclick="changeCardPhoto('${p.id}', -1, event)" class="absolute left-2 bg-black/40 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center text-xs transition"><i class="fas fa-chevron-left"></i></button>
+                    <button onclick="changeCardPhoto('${p.id}', 1, event)" class="absolute right-2 bg-black/40 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center text-xs transition"><i class="fas fa-chevron-right"></i></button>
+                    
+                    <span class="absolute top-4 left-4 bg-slate-900/80 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">${p.type}</span>
+                    <div class="absolute bottom-4 left-4 bg-black/60 text-white px-2.5 py-1 rounded-xl flex items-center space-x-1.5 text-xs font-bold">
+                        <i class="fas fa-eye text-yellow-400"></i>
+                        <span>${p.views}</span>
+                    </div>
+                </div>
+                <div class="p-6 flex-1 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">${p.cat} • ${p.ville}</span>
+                            <span class="text-[10px] font-black text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md"><i class="fas fa-clock mr-1"></i>${p.date}</span>
+                        </div>
+                        <h4 class="font-black text-lg text-slate-900 tracking-tight leading-snug mb-3">${p.title}</h4>
+                    </div>
+                    <div>
+                        <p class="text-xl font-black text-yellow-600 mb-4">${Number(p.price).toLocaleString()} <span class="text-xs font-bold">FCFA</span></p>
+                        <div class="border-t pt-4 flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                ${avatarMarkup}
+                                <span class="text-xs font-black text-slate-700 truncate max-w-[120px]">${p.ownerName}</span>
+                            </div>
+                            <button onclick="openInterestModal('${p.id}', '${p.title.replace(/'/g, "\\'")}', event)" class="bg-slate-900 text-white text-xs px-4 py-2.5 rounded-xl font-black tracking-tight hover:bg-black transition">S'INTERESSER</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+        function changeCardPhoto(propId, dir, event) {
+            event.stopPropagation();
+            const state = propertyCarouselStates[propId];
+            if (!state) return;
+            state.index += dir;
+            if (state.index >= state.images.length) state.index = 0;
+            if (state.index < 0) state.index = state.images.length - 1;
+            document.getElementById(`carousel-img-${propId}`).src = state.images[state.index];
+        }
+
+        // --- OUVERTURE DE LA MODALE PROFESSIONNELLE AU CLIC SUR UNE CARTE ---
+        async function handleCardClick(propId) {
+            const property = allPropertiesCached.find(p => p.id === propId);
+            if (!property) return;
+            
+            // Incrémentation asynchrone des vues
+            try {
+                const updatedViews = await apiCall('incrementViews', { id: propId });
+                property.views = updatedViews;
+            } catch(e) {}
+            
+            openPropertyDetailModal(property);
+        }
+
+        function openPropertyDetailModal(property) {
+            currentModalProperty = property;
+            currentModalImageIndex = 0;
+            
+            let imagesArray = [];
+            try { imagesArray = JSON.parse(property.img); } catch(e) { imagesArray = [property.img]; }
+            if (!Array.isArray(imagesArray)) imagesArray = [property.img];
+            currentModalProperty.imagesParsed = imagesArray;
+
+            document.getElementById('detail-modal-title').innerText = property.title;
+            document.getElementById('detail-modal-type').innerText = property.type;
+            document.getElementById('detail-modal-price').innerText = `${Number(property.price).toLocaleString()} FCFA`;
+            document.getElementById('detail-modal-ville').innerText = property.ville;
+            document.getElementById('detail-modal-cat').innerText = property.cat;
+            document.getElementById('detail-modal-date').innerText = property.date;
+            document.getElementById('detail-modal-views').innerText = property.views;
+            document.getElementById('detail-modal-owner').innerText = property.ownerName;
+            document.getElementById('detail-modal-phone').href = `tel:${property.ownerPhone}`;
+            
+            // Image de profil propriétaire dans la modale
+            const avatarImg = document.getElementById('detail-modal-avatar');
+            if (property.ownerAvatar) {
+                avatarImg.src = property.ownerAvatar;
+                avatarImg.classList.remove('hidden');
+            } else {
+                avatarImg.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23cbd5e1'/></svg>";
+            }
+
+            updateModalPhoto();
+            document.getElementById('property-detail-modal').classList.remove('hidden');
+        }
+
+        function updateModalPhoto() {
+            const imgs = currentModalProperty.imagesParsed;
+            document.getElementById('detail-modal-img').src = imgs[currentModalImageIndex];
+            document.getElementById('detail-modal-counter').innerText = `${currentModalImageIndex + 1} / ${imgs.length}`;
+        }
+
+        function prevDetailPhoto() {
+            currentModalImageIndex--;
+            if (currentModalImageIndex < 0) currentModalImageIndex = currentModalProperty.imagesParsed.length - 1;
+            updateModalPhoto();
+        }
+
+        function nextDetailPhoto() {
+            currentModalImageIndex++;
+            if (currentModalImageIndex >= currentModalProperty.imagesParsed.length) currentModalImageIndex = 0;
+            updateModalPhoto();
+        }
+
+        function closePropertyDetailModal() {
+            document.getElementById('property-detail-modal').classList.add('hidden');
+        }
+
+        // --- FILTRES ET MULTI-CRITÈRES ---
+        function applyFilters() {
+            const t = document.getElementById('filter-type').value;
+            const v = document.getElementById('filter-ville').value;
+            const c = document.getElementById('filter-subcat').value;
+            
+            let filtered = allPropertiesCached;
+            if (t) filtered = filtered.filter(p => p.type === t);
+            if (v) filtered = filtered.filter(p => p.ville === v);
+            if (c) filtered = filtered.filter(p => p.cat === c);
+            
+            document.getElementById('btn-show-all').classList.remove('hidden');
+            renderPropertiesGrid(filtered);
+        }
+
+        function filterQuick(type) {
+            document.getElementById('filter-type').value = type;
+            applyFilters();
+        }
+
+        function resetFilters() {
+            document.getElementById('filter-type').value = '';
+            document.getElementById('filter-ville').value = '';
+            document.getElementById('filter-subcat').value = '';
+            document.getElementById('btn-show-all').classList.add('hidden');
+            renderPropertiesGrid(allPropertiesCached);
+        }
+
+        // --- SYNCHRONISATION SYNCHRONE DU DASHBOARD (ANNONCES ET INTÉRÊTS) ---
+        async function syncDashboardData() {
+            if (!currentUser) return;
+            try {
+                // Chargement des statistiques globales
+                const stats = await apiCall('getUserStats', { email: currentUser.email });
+                document.getElementById('stat-views').innerText = stats.views;
+                document.getElementById('stat-leads').innerText = stats.leads;
+                document.getElementById('stat-comm').innerHTML = `${stats.commissions.toLocaleString()} <small class='text-sm'>FCFA</small>`;
+                
+                // Chargement des annonces possédées par l'utilisateur
+                const ads = await apiCall('getUserAds', { email: currentUser.email });
+                const adsList = document.getElementById('user-ads-list');
+                adsList.innerHTML = ads.length ? '' : '<p class="text-gray-400 italic">Aucune annonce enregistrée.</p>';
+                ads.forEach(ad => {
+                    const row = document.createElement('div');
+                    row.className = "p-4 bg-slate-50 rounded-2xl border flex justify-between items-center hover:bg-slate-100 cursor-pointer transition shadow-sm";
+                    row.onclick = () => openPropertyDetailModal(ad);
+                    row.innerHTML = `<div><b class="text-slate-900">${ad.title}</b><p class="text-xs text-gray-400">${ad.ville} • ${ad.cat}</p></div><span class="font-black text-yellow-600">${Number(ad.price).toLocaleString()} FCFA</span>`;
+                    adsList.appendChild(row);
+                });
+
+                // Chargement des intérêts de l'utilisateur (Bouton "Intéressés" du Nav)
+                const interests = await apiCall('getUserInterests', { email: currentUser.email });
+                const intList = document.getElementById('user-interests-list');
+                intList.innerHTML = interests.length ? '' : '<p class="text-gray-400 italic">Vous n\'avez envoyé aucun formulaire d\'intérêt.</p>';
+                interests.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = "p-4 bg-amber-50/50 rounded-2xl border border-amber-100 flex justify-between items-center hover:bg-amber-50 cursor-pointer transition shadow-sm";
+                    row.onclick = () => openPropertyDetailModal(item);
+                    row.innerHTML = `<div><b class="text-slate-900">${item.title}</b><p class="text-xs text-gray-500">Contact Propriétaire : ${item.ownerPhone}</p></div><span class="text-xs bg-amber-600 text-white font-bold px-2.5 py-1 rounded-lg">Formulaire Envoyé</span>`;
+                    intList.appendChild(row);
+                });
+
+            } catch (e) {}
+        }
+
+        // --- TRANSMISSION DU FORMULAIRE DE PUBLICATION ---
+        async function handlePostSubmit(event) {
+            event.preventDefault();
+            if (!currentUser) return openLoginModal();
+            if (selectedUploadedImagesBase64.length === 0) return showErrorModal("Veuillez sélectionner au moins une image.");
+            
+            const btn = document.getElementById('btn-post-exec');
+            btn.disabled = true;
+            btn.innerText = "TRANSFERT EN COURS...";
+
+            const payload = {
+                ownerEmail: currentUser.email,
+                ownerName: currentUser.name,
+                ownerPhone: currentUser.phone,
+                type: document.getElementById('post-type').value,
+                cat: document.getElementById('post-cat').value,
+                ville: document.getElementById('post-ville').value,
+                title: document.getElementById('post-title').value,
+                price: parseFloat(document.getElementById('post-price').value),
+                images: selectedUploadedImagesBase64, 
+                isBoosted: document.getElementById('check-certify').checked,
+                isPremium: document.getElementById('check-certify').checked
+            };
+
+            try {
+                await apiCall('submitPost', payload);
+                showSuccessModal("Votre propriété a bien été indexée et publiée !");
+                document.getElementById('propertyForm').reset();
+                selectedUploadedImagesBase64 = [];
+                renderPhotoPreviews();
+                showSection('home');
+            } catch (e) {
+                showErrorModal("Erreur d'enregistrement.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "SOUMETTRE L'ANNONCE";
+            }
+        }
+
+        // --- AUTHENTIFICATION & PROFIL ---
+        function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
+        function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
+        
+        function switchAuthTab(type) {
+            if (type === 'login') {
+                document.getElementById('form-login').classList.remove('hidden');
+                document.getElementById('form-register').classList.add('hidden');
+                document.getElementById('tab-login-btn').className = "flex-1 pb-3 border-b-2 border-slate-900 text-slate-900";
+                document.getElementById('tab-register-btn').className = "flex-1 pb-3 border-b-2 border-transparent text-gray-400";
+            } else {
+                document.getElementById('form-login').classList.add('hidden');
+                document.getElementById('form-register').classList.remove('hidden');
+                document.getElementById('tab-login-btn').className = "flex-1 pb-3 border-b-2 border-transparent text-gray-400";
+                document.getElementById('tab-register-btn').className = "flex-1 pb-3 border-b-2 border-slate-900 text-slate-900";
+            }
+        }
+
+        async function handleLogin() {
+            try {
+                const user = await apiCall('authenticate', {
+                    email: document.getElementById('login-email').value,
+                    pass: document.getElementById('login-pass').value
+                });
+                if (!user) return alert("Identifiants incorrects.");
+                setupSession(user);
+                closeLoginModal();
+            } catch(e) { alert("Erreur serveur."); }
+        }
+
+        async function handleRegister() {
+            try {
+                const user = await apiCall('register', {
+                    name: document.getElementById('reg-name').value,
+                    email: document.getElementById('reg-email').value,
+                    phone: document.getElementById('reg-phone').value,
+                    pass: document.getElementById('reg-pass').value
+                });
+                setupSession(user);
+                closeLoginModal();
+            } catch(e) { alert(e.message); }
+        }
+
+        function setupSession(user) {
+            currentUser = user;
+            document.getElementById('nav-auth-btn').innerHTML = `<i class='fas fa-th-large mr-2'></i> Mon Dashboard`;
+            document.getElementById('nav-auth-btn').onclick = () => showSection('dashboard');
+            
+            document.getElementById('dash-user-name').innerText = user.name;
+            document.getElementById('dash-user-status').innerText = `Statut Partenaire : ${user.status}`;
+            
+            document.getElementById('prof-name-input').value = user.name;
+            document.getElementById('prof-email').innerText = user.email;
+            document.getElementById('prof-tel').value = user.phone;
+
+            if(user.avatar) {
+                document.getElementById('dash-avatar-img').src = user.avatar;
+                document.getElementById('dash-avatar-img').classList.remove('hidden');
+                document.getElementById('dash-avatar-placeholder').classList.add('hidden');
+                document.getElementById('profile-preview-avatar').src = user.avatar;
+                document.getElementById('profile-preview-avatar').classList.remove('hidden');
+                document.getElementById('profile-preview-placeholder').classList.add('hidden');
+            }
+            
+            if (user.status === 'Blue') {
+                document.getElementById('premium-banner').classList.remove('hidden');
+            }
+            showSection('home');
+        }
+
+        async function updateProfile() {
+            const avatarImg = document.getElementById('profile-preview-avatar');
+            let avatarBase64 = currentUser.avatar;
+            if (!avatarImg.classList.contains('hidden')) {
+                avatarBase64 = avatarImg.src;
+            }
+
+            try {
+                const updated = await apiCall('updateProfile', {
+                    email: currentUser.email,
+                    name: document.getElementById('prof-name-input').value,
+                    phone: document.getElementById('prof-tel').value,
+                    avatar: avatarBase64
+                });
+                currentUser = updated;
+                showSuccessModal("Profil mis à jour avec succès.");
+                setupSession(currentUser);
+            } catch(e) { showErrorModal("Erreur lors de la mise à jour."); }
+        }
+
+        function checkAuthAndPost() {
+            if (!currentUser) openLoginModal();
+            else showSection('post');
+        }
+
+        function openInterestModal(propId, propTitle, event) {
+            event.stopPropagation();
+            document.getElementById('interest-prop-id').value = propId;
+            document.getElementById('interest-prop-title').innerText = propTitle;
+            if(currentUser) {
+                document.getElementById('int-name').value = currentUser.name;
+                document.getElementById('int-email').value = currentUser.email;
+                document.getElementById('int-tel').value = currentUser.phone;
+            }
+            document.getElementById('interest-modal').classList.remove('hidden');
+        }
+
+        function closeInterestModal() { document.getElementById('interest-modal').classList.add('hidden'); }
+
+        async function submitInterest() {
+            const data = {
+                propId: document.getElementById('interest-prop-id').value,
+                propTitle: document.getElementById('interest-prop-title').innerText,
+                name: document.getElementById('int-name').value,
+                tel: document.getElementById('int-tel').value,
+                email: document.getElementById('int-email').value,
+                timestamp: new Date().toLocaleString()
+            };
+            if(!data.name || !data.tel || !data.email) return alert("Veuillez remplir tous les champs.");
+            try {
+                await apiCall('saveInterest', data);
+                showSuccessModal("Votre intérêt a été enregistré.");
+                closeInterestModal();
+                if(currentUser) syncDashboardData();
+            } catch (e) { alert("Erreur de transmission."); }
+        }
+
+        function showSuccessModal(msg) {
+            document.getElementById('modal-success-msg').innerText = msg;
+            document.getElementById('modal-success').classList.remove('hidden');
+        }
+        function closeSuccessModal() { document.getElementById('modal-success').classList.add('hidden'); }
+        function showErrorModal(msg) {
+            document.getElementById('modal-error-msg').innerText = msg;
+            document.getElementById('modal-error').classList.remove('hidden');
+        }
+        function closeErrorModal() { document.getElementById('modal-error').classList.add('hidden'); }
+        function toggleCertifyInputs() { document.getElementById('certify-inputs').classList.toggle('hidden'); }
+        function togglePostSubCat() {
+            const type = document.getElementById('post-type').value;
+            document.getElementById('post-cat').disabled = (type === 'Terrain');
+        }
+        function toggleSubCat() {
+            const type = document.getElementById('filter-type').value;
+            document.getElementById('filter-subcat').disabled = (type === 'Terrain');
+        }
+        function logout() { window.location.reload(); }
+
+        // Initialisation automatique au chargement
+        window.onload = () => { loadProperties(); };
+    </script>
+</body>
+</html>
