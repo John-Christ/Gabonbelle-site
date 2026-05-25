@@ -1,0 +1,329 @@
+// --- CONFIGURATION GLOBALE ---
+const SPREADSHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
+
+function doPost(e) {
+  try {
+    const request = JSON.parse(e.postData.contents);
+    const action = request.action;
+    const data = request.data;
+    let result;
+
+    switch (action) {
+      case 'authenticate':
+        result = authenticateUser(data.email, data.pass);
+        break;
+      case 'register':
+        result = registerUser(data.name, data.email, data.phone, data.pass);
+        break;
+      case 'updateProfile':
+        result = updateProfile(data.email, data.name, data.phone);
+        break;
+      case 'updateProfilePhoto':
+        result = updateProfilePhoto(data.email, data.imageBase64);
+        break;
+      case 'getAllProperties':
+        result = getAllProperties();
+        break;
+      case 'submitPost':
+        result = submitPost(data);
+        break;
+      case 'requestUpgrade':
+        result = requestUpgrade(data);
+        break;
+      case 'getUserStats':
+        result = getUserStats(data.email);
+        break;
+      case 'getUserAds':
+        result = getUserAds(data.email);
+        break;
+      case 'saveInterest':
+        result = saveInterest(data);
+        break;
+      case 'getUserInterestedForms':
+        result = getUserInterestedForms(data.email, data.type);
+        break;
+      default:
+        throw new Error("Action non reconnue");
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({ success: true, data: result }))
+                         .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
+                         .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// --- GESTION DES UTILISATEURS (AVEC COLONNE F : IMAGE PROFIL) ---
+function authenticateUser(email, pass) {
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('users');
+  const rows = sheet.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0].toString().toLowerCase().trim() === email.toLowerCase().trim() && rows[i][3].toString() === pass.toString()) {
+      return { 
+        email: rows[i][0], 
+        name: rows[i][1], 
+        phone: rows[i][2], 
+        status: rows[i][4] || "Off",
+        image: rows[i][5] || "" // Colonne F (index 5)
+      };
+    }
+  }
+  return null;
+}
+
+function registerUser(name, email, phone, pass) {
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('users');
+  const rows = sheet.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0].toString().toLowerCase().trim() === email.toLowerCase().trim()) {
+      throw new Error("Cet email est déjà utilisé.");
+    }
+  }
+  // Ajouter une ligne par défaut, avec la colonne F vide au départ
+  sheet.appendRow([email, name, phone, pass, "Off", ""]);
+  return { email, name, phone, status: "Off", image: "" };
+}
+
+function updateProfile(email, name, phone) {
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('users');
+  const rows = sheet.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0].toString().toLowerCase().trim() === email.toLowerCase().trim()) {
+      sheet.getRange(i + 1, 2).setValue(name);
+      sheet.getRange(i + 1, 3).setValue(phone);
+      return { 
+        email, 
+        name, 
+        phone, 
+        status: rows[i][4] || "Off", 
+        image: rows[i][5] || "" 
+      };
+    }
+  }
+  throw new Error("Utilisateur introuvable");
+}
+
+function updateProfilePhoto(email, imageBase64) {
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('users');
+  const rows = sheet.getDataRange().getValues();
+  
+  // Simulation de conversion ou génération de lien sécurisé Google User Content
+  // Pour la persistance Apps Script, nous créons un fichier dans Google Drive et générons son URL web
+  const folder = getOrCreateImagesFolder();
+  const contentType = imageBase64.substring(imageBase64.indexOf(":")+1, imageBase64.indexOf(";"));
+  const decodeBase64 = Utilities.base64Decode(imageBase64.split(",")[1]);
+  const blob = Utilities.newBlob(decodeBase64, contentType, "profile_" + email + ".png");
+  const file = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  
+  // Utilisation format d'adresse structurée demandée
+  const googleUserContentLink = "https://lh3.googleusercontent.com/d/" + file.getId();
+
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0].toString().toLowerCase().trim() === email.toLowerCase().trim()) {
+      sheet.getRange(i + 1, 6).setValue(googleUserContentLink); // Poussé en colonne F
+      return { 
+        email: rows[i][0], 
+        name: rows[i][1], 
+        phone: rows[i][2], 
+        status: rows[i][4] || "Off", 
+        image: googleUserContentLink 
+      };
+    }
+  }
+  throw new Error("Erreur utilisateur lors de la mise à jour de l'image.");
+}
+
+// --- CATALOGUE GLOBAL ET INFOS DES PROPRIÉTAIRES EN TEMPS RÉEL ---
+function getAllProperties() {
+  const propSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('properties');
+  const userSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('users');
+  if (!propSheet) return [];
+
+  const userMap = {};
+  if (userSheet) {
+    const userRows = userSheet.getDataRange().getValues();
+    for (let j = 1; j < userRows.length; j++) {
+      userMap[userRows[j][0].toString().toLowerCase().trim()] = {
+        status: userRows[j][4] || "Off",
+        image: userRows[j][5] || ""
+      };
+    }
+  }
+
+  const rows = propSheet.getDataRange().getValues();
+  const properties = [];
+  for (let i = 1; i < rows.length; i++) {
+    let ownerEmailClean = rows[i][1].toString().toLowerCase().trim();
+    let userData = userMap[ownerEmailClean] || { status: "Off", image: "" };
+    
+    // Extraction dynamique des vues (simulation basée sur l'id ou stockée en colonne O index 14 si existante)
+    let viewsCount = rows[i].length > 14 ? (rows[i][14] || 42) : 42;
+
+    properties.push({
+      id: rows[i][0].toString(),
+      ownerEmail: rows[i][1],
+      ownerName: rows[i][2],
+      ownerPhone: rows[i][3],
+      ownerStatus: userData.status,
+      ownerImage: userData.image, // Lien d'image rattaché
+      type: rows[i][5],
+      cat: rows[i][6],
+      ville: rows[i][7],
+      title: rows[i][8],
+      price: rows[i][9],
+      img: rows[i][10],
+      isBoosted: rows[i][11],
+      isPremium: rows[i][12],
+      date: rows[i][13] ? rows[i][13].toString() : "Recente",
+      views: viewsCount
+    });
+  }
+  return properties;
+}
+
+function submitPost(data) {
+  const propSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('properties');
+  let imageUrls = [];
+  if (data.images && data.images.length > 0) {
+    const folder = getOrCreateImagesFolder();
+    data.images.forEach((base64, index) => {
+      const contentType = base64.substring(base64.indexOf(":")+1, base64.indexOf(";"));
+      const raw = Utilities.base64Decode(base64.split(",")[1]);
+      const blob = Utilities.newBlob(raw, contentType, "img_" + Date.now() + "_" + index + ".png");
+      const file = folder.createFile(blob);
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      imageUrls.push("https://lh3.googleusercontent.com/d/" + file.getId());
+    });
+  }
+
+  const nextId = "PROP" + (propSheet.getLastRow() + 100);
+  propSheet.appendRow([
+    nextId, data.ownerEmail, data.ownerName, data.ownerPhone, "Off",
+    data.type, data.cat, data.ville, data.title, data.price,
+    imageUrls.join(','), "Off", data.isPremium, data.date
+  ]);
+  
+  syncActivitiesGlobalSheet(); // Recalculer les données globales de l'activité
+  return { success: true };
+}
+
+// --- COMPTES, STATISTIQUES ET FEUILLE "ACTIVITÉS" SYNCHRONISÉE ---
+function saveInterest(data) {
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('interests');
+  sheet.appendRow([data.timestamp, data.propId, data.propTitle, data.name, data.tel, data.email]);
+  
+  syncActivitiesGlobalSheet(); // Recalculer et synchroniser l'onglet Activités
+  return { success: true };
+}
+
+function getUserStats(email) {
+  const properties = getAllProperties();
+  const userProperties = properties.filter(p => p.ownerEmail.toLowerCase().trim() === email.toLowerCase().trim());
+  const userPropertiesIds = userProperties.map(p => p.id);
+
+  let totalViews = userProperties.reduce((sum, p) => sum + parseInt(p.views || 42), 0);
+  let leadsCount = 0;
+
+  const interestSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('interests');
+  if (interestSheet && userPropertiesIds.length > 0) {
+    const intRows = interestSheet.getDataRange().getValues();
+    for (let j = 1; j < intRows.length; j++) {
+      if (userPropertiesIds.indexOf(intRows[j][1].toString()) !== -1) {
+        leadsCount++;
+      }
+    }
+  }
+  return { views: totalViews, leads: leadsCount, commissions: (leadsCount * 5000) };
+}
+
+function getUserAds(email) {
+  return getAllProperties().filter(p => p.ownerEmail.toLowerCase().trim() === email.toLowerCase().trim());
+}
+
+// Extraction Croisée des Formulaires d'Intérêts par Type (Reçus vs Envoyés)
+function getUserInterestedForms(email, type) {
+  const interestSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('interests');
+  if (!interestSheet) return [];
+  
+  const intRows = interestSheet.getDataRange().getValues();
+  const allProps = getAllProperties();
+  const result = [];
+
+  for (let i = 1; i < intRows.length; i++) {
+    const propId = intRows[i][1].toString();
+    const targetProperty = allProps.find(p => p.id === propId);
+    
+    if (type === 'received') {
+      // Formulaires reçus : L'utilisateur connecté est le propriétaire du bien concerné
+      if (targetProperty && targetProperty.ownerEmail.toLowerCase().trim() === email.toLowerCase().trim()) {
+        result.push({
+          timestamp: intRows[i][0],
+          propId: propId,
+          propTitle: intRows[i][2],
+          name: intRows[i][3],
+          tel: intRows[i][4],
+          email: intRows[i][5],
+          propertyInfo: targetProperty
+        });
+      }
+    } else if (type === 'sent') {
+      // Formulaires envoyés : L'adresse email de l'émetteur correspond à l'utilisateur connecté
+      if (intRows[i][5].toString().toLowerCase().trim() === email.toLowerCase().trim()) {
+        result.push({
+          timestamp: intRows[i][0],
+          propId: propId,
+          propTitle: intRows[i][2],
+          name: intRows[i][3],
+          tel: intRows[i][4],
+          email: intRows[i][5],
+          propertyInfo: targetProperty
+        });
+      }
+    }
+  }
+  return result;
+}
+
+// Synchronisation automatique et constante de l'onglet 'Activités' du Site Global
+function syncActivitiesGlobalSheet() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  let actSheet = ss.getSheetByName('Activités');
+  
+  // Si la feuille n'existe pas, la créer avec les colonnes demandées
+  if (!actSheet) {
+    actSheet = ss.insertSheet('Activités');
+    actSheet.appendRow(["Vues Annonces", "Personnes Intéressées", "Commission Total"]);
+  }
+  
+  const allProps = getAllProperties();
+  const totalViews = allProps.reduce((sum, p) => sum + parseInt(p.views || 42), 0);
+  
+  const interestSheet = ss.getSheetByName('interests');
+  const totalLeads = interestSheet ? (interestSheet.getLastRow() - 1) : 0;
+  const totalCommission = totalLeads * 5000;
+
+  // Écriture / Mise à jour des données en ligne 2
+  actSheet.getRange(2, 1).setValue(totalViews);
+  actSheet.getRange(2, 2).setValue(totalLeads);
+  actSheet.getRange(2, 3).setValue(totalCommission);
+}
+
+function requestUpgrade(data) {
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('upgrades');
+  if(!sheet) {
+    SpreadsheetApp.openById(SPREADSHEET_ID).insertSheet('upgrades').appendRow(["Email", "Type", "Téléphone", "ID Trans", "Date"]);
+  }
+  SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('upgrades').appendRow([
+    data.email, data.upgradeType, data.airtelPhone, data.airtelTransactionId, new Date().toLocaleDateString()
+  ]);
+  return { success: true };
+}
+
+function getOrCreateImagesFolder() {
+  const folderName = "Gabonbelle_Immo_Images";
+  const folders = DriveApp.getFoldersByName(folderName);
+  if (folders.hasNext()) return folders.next();
+  return DriveApp.createFolder(folderName);
+}
