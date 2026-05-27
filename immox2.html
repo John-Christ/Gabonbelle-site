@@ -491,6 +491,7 @@
         function updateAuthUI() {
             const btn = document.getElementById('nav-auth-btn');
             const btnMobile = document.getElementById('nav-auth-btn-mobile');
+             const banner = document.getElementById('premium-banner');
             if (currentUser) {
                 const innerTxt = `<i class="fas fa-tachometer-alt mr-2"></i> Mon Espace (${currentUser.name.split(' ')[0]})`;
                 btn.innerHTML = innerTxt;
@@ -502,15 +503,17 @@
                 }
                 
                 document.getElementById('dash-user-name').innerText = currentUser.name;
-                document.getElementById('dash-user-status').innerText = currentUser.status === "On" ? "Membre Certifié Blue" : "Compte Standard";
+                document.getElementById('dash-user-status').innerText = currentUser.status === "On" ? "Membre Certifié, Badge Bleu" : "Compte Standard";
                 document.getElementById('dash-user-status').className = currentUser.status === "On" ? "text-[10px] font-black uppercase tracking-widest mt-1 text-blue-500" : "text-[10px] font-black uppercase tracking-widest mt-1 text-gray-400";
                 
                 // Gestion de la couleur du badge (Bleu si 'On', Gris par défaut)
                 const badgeIconContainer = document.getElementById('dash-badge-icon');
                 if(currentUser.status === "On") {
                     badgeIconContainer.className = "absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-blue-500 shadow-md";
+                     banner.classList.remove('hidden');
                 } else {
                     badgeIconContainer.className = "absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-gray-400";
+                     banner.classList.add('hidden');
                 }
 
                 const avatarImg = document.getElementById('dash-user-avatar');
