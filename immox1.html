@@ -230,18 +230,43 @@
         <section id="dashboard-section" class="container mx-auto px-4 py-12 hidden">
             <div class="flex flex-col md:flex-row gap-8">
                 <aside class="w-full md:w-1/4 bg-white rounded-3xl shadow-xl p-6 border border-gray-200 h-fit">
-                    <div class="text-center mb-8">
+
+
+
+
+
+
+  <div class="text-center mb-8">
+    <div class="w-24 h-24 bg-slate-200 rounded-full mx-auto mb-4 flex items-center justify-center relative border-4 border-white shadow-xl">
+        <i class="fas fa-user text-4xl text-slate-400 absolute"></i>
+        <img id="dash-user-avatar" class="absolute inset-0 w-full h-full object-cover rounded-full hidden" src="" alt="Avatar"> 
+        <span id="dash-badge-icon" class="absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-gradient-to-br from-yellow-400 via-amber-500 to-amber-600 shadow-[0_4px_6px_rgba(0,0,0,0.25),inset_0_2px_3px_rgba(255,255,255,0.45)] transform hover:scale-105 transition-transform duration-200">
+            <i class="fas fa-certificate text-white text-xs drop-shadow-[0_1px_1px_rgba(0,0,0,0.4)]"></i>
+        </span>
+    </div>
+    <h4 id="dash-user-name" class="font-bold text-xl">Utilisateur</h4>
+    <p id="dash-user-status" class="text-[10px] font-black uppercase tracking-widest mt-1 text-gray-400"></p>
+</div> 
+
+
+                    
+
+                    
+                    <!-- div class="text-center mb-8">
                         <div class="w-24 h-24 bg-slate-200 rounded-full mx-auto mb-4 flex items-center justify-center relative border-4 border-white shadow-lg overflow-hidden">
                             <img id="dash-user-avatar" src="https://via.placeholder.com/96" class="w-full h-full object-cover hidden">
                             <i id="dash-user-icon" class="fas fa-user text-4xl text-slate-400"></i>
-                            <!-- LE BADGE PASSE EN BLEU QUAND CERTIFIÉ ET RESTE GRIS SI STANDARD -->
+                            <!-- LE BADGE PASSE EN BLEU QUAND CERTIFIÉ ET RESTE GRIS SI STANDARD >
                             <span id="dash-badge-icon" class="absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-gray-400 transition-colors duration-300">
                                 <i class="fas fa-certificate text-white text-xs"></i>
                             </span>
                         </div>
                         <h4 id="dash-user-name" class="font-bold text-xl">Utilisateur</h4>
                         <p id="dash-user-status" class="text-[10px] font-black uppercase tracking-widest mt-1"></p>
-                    </div>
+                    </div  -->
+
+
+                    
                     <nav class="space-y-2">
                         <button onclick="switchDashTab('activities')" class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 font-bold transition flex items-center"><i class="fas fa-chart-pie mr-3"></i> Activités</button>
                         <button onclick="switchDashTab('ads')" class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 font-bold transition flex items-center"><i class="fas fa-layer-group mr-3"></i> Mes Annonces</button>
