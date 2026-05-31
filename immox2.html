@@ -520,7 +520,7 @@
         function updateAuthUI() {
             const btn = document.getElementById('nav-auth-btn');
             const btnMobile = document.getElementById('nav-auth-btn-mobile');
-             const banner = document.getElementById('premium-banner');
+            //const banner = document.getElementById('premium-banner');
             if (currentUser) {
                 const innerTxt = `<i class="fas fa-tachometer-alt mr-2"></i> Mon Espace (${currentUser.name.split(' ')[0]})`;
                 btn.innerHTML = innerTxt;
@@ -539,14 +539,17 @@
                 const badgeIconContainer = document.getElementById('dash-badge-icon');
                 if(currentUser.status === "On") {
                     badgeIconContainer.className = "absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-blue-500 shadow-md";
-                     banner.classList.remove('hidden');
+                  //   banner.classList.remove('hidden');
                 } else {
                     badgeIconContainer.className = "absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-gray-400";
-                     banner.classList.add('hidden');
+                    // banner.classList.add('hidden');
                 }
 
                 const avatarImg = document.getElementById('dash-user-avatar');
                 const avatarIcon = document.getElementById('dash-user-icon');
+
+                 
+                
                 if(currentUser.image) {
                     avatarImg.src = currentUser.image;
                     avatarImg.classList.remove('hidden');
