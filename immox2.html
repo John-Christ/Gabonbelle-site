@@ -515,7 +515,69 @@
 
 
 
+      function updateAuthUI() {
+            const btn = document.getElementById('nav-auth-btn');
+            const btnMobile = document.getElementById('nav-auth-btn-mobile');
+            if (currentUser) {
+                const innerTxt = `<i class="fas fa-tachometer-alt mr-2"></i> Mon Espace (${currentUser.name.split(' ')[0]})`;
+                btn.innerHTML = innerTxt;
+                btn.onclick = () => showSection('dashboard');
+                
+                if(btnMobile) {
+                    btnMobile.innerHTML = innerTxt;
+                    btnMobile.onclick = () => { showSection('dashboard'); toggleMobileMenu(); };
+                }
+                
+                document.getElementById('dash-user-name').innerText = currentUser.name;
+                document.getElementById('dash-user-status').innerText = currentUser.status === "On" ? "Membre Certifié Blue" : "Compte Standard";
+                document.getElementById('dash-user-status').className = currentUser.status === "On" ? "text-[10px] font-black uppercase tracking-widest mt-1 text-blue-500" : "text-[10px] font-black uppercase tracking-widest mt-1 text-gray-400";
+                
+                // Gestion de la couleur du badge (Bleu si 'On', Gris par défaut)
+                const badgeIconContainer = document.getElementById('dash-badge-icon');
+                if(currentUser.status === "On") {
+                    badgeIconContainer.className = "absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-blue-500 shadow-md";
+                } else {
+                    badgeIconContainer.className = "absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-gray-400";
+                }
+
+                const avatarImg = document.getElementById('dash-user-avatar');
+                const avatarIcon = document.getElementById('dash-user-icon');
+                if(currentUser.image) {
+                    avatarImg.src = currentUser.image;
+                    avatarImg.classList.remove('hidden');
+                    avatarIcon.classList.add('hidden');
+                } else {
+                    avatarImg.classList.add('hidden');
+                    avatarIcon.classList.remove('hidden');
+                }
+            } else {
+                const baseTxt = `<i class="fas fa-user-circle mr-2"></i> Connexion`;
+                btn.innerHTML = baseTxt;
+                btn.onclick = openLoginModal;
+                if(btnMobile) {
+                    btnMobile.innerHTML = baseTxt;
+                    btnMobile.onclick = () => { openLoginModal(); toggleMobileMenu(); };
+                }
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         
+
+        /*
 
         function updateAuthUI() {
             const btn = document.getElementById('nav-auth-btn');
@@ -567,7 +629,7 @@
                     btnMobile.onclick = () => { openLoginModal(); toggleMobileMenu(); };
                 }
             }
-        }
+        }    */
 
 
 
@@ -858,7 +920,7 @@
             updateAuthUI(); 
         }
     } catch(e) {
-      //  console.error("Erreur de rafraîchissement des stats utilisateur:", e);
+        console.error("Erreur de rafraîchissement des stats utilisateur:", e);
     }
 }
 
