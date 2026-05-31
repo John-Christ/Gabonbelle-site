@@ -238,22 +238,49 @@
 
 
 
-
-                    
-
-                    
                     <div class="text-center mb-8">
+    <style>
+        #dash-badge-icon {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.25), 
+                        inset 0 2.5px 3px rgba(255,255,255,0.5), 
+                        inset 0 -2.5px 3px rgba(0,0,0,0.2) !important;
+            background-image: linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(0,0,0,0.1) 100%) !important;
+            z-index: 10 !important;
+        }
+    </style>
+
+    <div class="w-24 h-24 mx-auto mb-4 relative">
+        
+        <div class="w-full h-full bg-slate-200 rounded-full flex items-center justify-center border-4 border-white shadow-lg overflow-hidden relative">
+            <i class="fas fa-user text-4xl text-slate-400 absolute"></i>
+            
+            <img id="dash-user-avatar" src="https://via.placeholder.com/96" class="absolute inset-0 w-full h-full object-cover rounded-full hidden">
+        </div>
+
+        <span id="dash-badge-icon" class="absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-gray-400 transition-colors duration-300">
+            <i class="fas fa-certificate text-white text-xs drop-shadow-[0_1px_1px_rgba(0,0,0,0.4)]"></i>
+        </span>
+    </div>
+
+    <h4 id="dash-user-name" class="font-bold text-xl">Utilisateur</h4>
+    <p id="dash-user-status" class="text-[10px] font-black uppercase tracking-widest mt-1 text-gray-400"></p>
+</div>
+
+                    
+
+                    
+                    <!--div class="text-center mb-8">
                         <div class="w-24 h-24 bg-slate-200 rounded-full mx-auto mb-4 flex items-center justify-center relative border-4 border-white shadow-lg overflow-hidden">
                             <img id="dash-user-avatar" src="https://via.placeholder.com/96" class="w-full h-full object-cover hidden">
                             <i id="dash-user-icon" class="fas fa-user text-4xl text-slate-400"></i>
-                            <!-- LE BADGE PASSE EN BLEU QUAND CERTIFIÉ ET RESTE GRIS SI STANDARD -->
+                            <!-- LE BADGE PASSE EN BLEU QUAND CERTIFIÉ ET RESTE GRIS SI STANDARD 
                             <span id="dash-badge-icon" class="absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-gray-400 transition-colors duration-300">
                                 <i class="fas fa-certificate text-white text-xs"></i>
                             </span>
                         </div>
                         <h4 id="dash-user-name" class="font-bold text-xl">Utilisateur</h4>
                         <p id="dash-user-status" class="text-[10px] font-black uppercase tracking-widest mt-1"></p>
-                    </div>
+                </div-->
 
 
                     
