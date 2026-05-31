@@ -792,7 +792,34 @@
             }
         }
 
-        async function loadUserStatsAndActivities() {
+
+
+         async function loadUserStatsAndActivities() {
+    try {
+        const stats = await apiCall('getUserStats', { email: currentUser.email });
+        if(stats) {
+            document.getElementById('stat-views').innerText = stats.views || 0;
+            document.getElementById('stat-leads').innerText = stats.leads || 0;
+            document.getElementById('stat-comm').innerHTML = `${Number(stats.commissions || 0).toLocaleString()} <small class="text-sm">FCFA</small>`;
+            
+            // --- MODIFICATION: Apply live changes directly to the current session ---
+            if (stats.status) currentUser.status = stats.status;
+            if (stats.image !== undefined) currentUser.image = stats.image;
+            
+            // Save the fresh data back to local storage
+            localStorage.setItem('gabonbelle_user', JSON.stringify(currentUser));
+            
+            // Instantly redraw the navigation bar and side dashboard elements (including the blue badge)
+            updateAuthUI(); 
+        }
+    } catch(e) {
+        console.error("Erreur de rafraîchissement des stats utilisateur:", e);
+    }
+}
+
+        
+        
+        /* async function loadUserStatsAndActivities() {
             try {
                 const stats = await apiCall('getUserStats', { email: currentUser.email });
                 if(stats) {
@@ -801,7 +828,10 @@
                     document.getElementById('stat-comm').innerHTML = `${Number(stats.commissions || 0).toLocaleString()} <small class="text-sm">FCFA</small>`;
                 }
             } catch(e) {}
-        }
+        }  */
+
+
+        
 
         async function loadUserAds() {
             const list = document.getElementById('user-ads-list');
