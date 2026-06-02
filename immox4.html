@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gabonbelle Immobilier | Investissement & Prestige</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Intégration de Chart.js pour les graphiques du tableau de bord -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gold-gradient { background: linear-gradient(135deg, #d4af37 0%, #f9e27d 100%); }
+        .blue-verify { color: #1DA1F2; }
+        .hidden { display: none; }
+        .property-card { transition: all 0.4s ease; }
+        .property-card:hover { transform: translateY(-8px); }
+        .drag-over { border-color: #d4af37 !important; background-color: #fffbeb !important; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-900">
+
+    <!-- MODAL SUCCÈS -->
+    <div id="modal-success" class="fixed inset-0 bg-black/60 z-[200] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border border-emerald-100">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 mb-2">Opération réussie !</h3>
+            <p id="modal-success-msg" class="text-sm text-gray-500 italic mb-6">Action effectuée avec succès.</p>
+            <button onclick="closeSuccessModal()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition">Continuer</button>
+        </div>
+    </div>
+
+    <!-- MODAL ERREUR -->
+    <div id="modal-error" class="fixed inset-0 bg-black/60 z-[200] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border border-rose-100">
+            <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 mb-2">Une erreur est survenue</h3>
+            <p id="modal-error-msg" class="text-sm text-gray-500 italic mb-6">Impossible de finaliser l'action.</p>
+            <button onclick="closeErrorModal()" class="w-full bg-rose-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-rose-600/20 hover:bg-rose-700 transition">Fermer</button>
+        </div>
+    </div>
+
+    <!-- MODAL BOOST ANNONCE -->
+    <div id="boost-modal" class="fixed inset-0 bg-black/80 z-[180] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full relative">
+            <button onclick="closeBoostModal()" class="absolute top-4 right-4 text-gray-400 hover:text-black"><i class="fas fa-times"></i></button>
+            <h3 class="text-2xl font-black mb-1 flex items-center text-amber-600"><i class="fas fa-rocket mr-2"></i> Booster l'annonce</h3>
+            <p id="boost-prop-title" class="text-xs text-slate-500 italic mb-6"></p>
+            
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4 text-xs text-amber-900 space-y-1">
+                <p class="font-bold uppercase"><i class="fas fa-info-circle mr-1"></i> Instructions de paiement :</p>
+                <p>Envoyez <b>10.000 FCFA</b> via Airtel Money au réseau de l'agence, puis collez les détails requis ci-dessous.</p>
+            </div>
+
+            <div class="space-y-4">
+                <input type="hidden" id="boost-prop-id">
+                <div>
+                    <label class="text-[10px] font-black uppercase text-gray-400 block mb-1">Numéro Émetteur Airtel Money</label>
+                    <input type="tel" id="boost-phone" placeholder="Ex: 066704166" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black uppercase text-gray-400 block mb-1">ID de Transaction Airtel Money</label>
+                    <input type="text" id="boost-tx-id" placeholder="Ex: TXN9832742" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <button onclick="submitBoostPayment()" id="btn-boost-exec" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-black transition tracking-wider">SOUMETTRE POUR VÉRIFICATION</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVIGATION AVEC HAMBURGER -->
+    <nav class="bg-slate-900 text-white p-4 shadow-2xl sticky top-0 z-50 border-b border-yellow-600/30">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-black tracking-tighter cursor-pointer" onclick="showSection('home')">
+                GABONBELLE <span class="text-yellow-500 italic text-3xl">IMMO</span>
+            </h1>
+            
+            <div class="hidden md:flex space-x-8 font-medium items-center">
+                <a href="javascript:void(0)" onclick="filterQuick('Vente')" class="hover:text-yellow-500 transition">Acheter</a>
+                <a href="javascript:void(0)" onclick="filterQuick('Location')" class="hover:text-yellow-500 transition">Louer</a>
+                <a href="javascript:void(0)" onclick="filterQuick('Terrain')" class="hover:text-yellow-500 transition">Terrains</a>
+                <button id="nav-auth-btn" onclick="openLoginModal()" class="hover:text-yellow-500 flex items-center bg-transparent border-0 text-white cursor-pointer font-medium">
+                    <i class="fas fa-user-circle mr-2"></i> Connexion
+                </button>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <button onclick="checkAuthAndPost()" class="gold-gradient text-slate-900 px-4 py-2 md:px-6 md:py-2 rounded-full font-bold text-xs md:text-sm shadow-lg hover:scale-105 transition transform">
+                    POSTER
+                </button>
+                <button onclick="toggleMobileMenu()" class="md:hidden text-white focus:outline-none text-xl p-1">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div id="mobile-menu" class="hidden md:hidden bg-slate-950 p-4 mt-2 rounded-2xl space-y-3 font-bold text-sm tracking-wide border border-slate-800">
+            <a href="javascript:void(0)" onclick="filterQuick('Vente'); toggleMobileMenu();" class="block text-gray-300 hover:text-yellow-500 py-1"><i class="fas fa-shopping-bag mr-2"></i> Acheter</a>
+            <a href="javascript:void(0)" onclick="filterQuick('Location'); toggleMobileMenu();" class="block text-gray-300 hover:text-yellow-500 py-1"><i class="fas fa-key mr-2"></i> Louer</a>
+            <a href="javascript:void(0)" onclick="filterQuick('Terrain'); toggleMobileMenu();" class="block text-gray-300 hover:text-yellow-500 py-1"><i class="fas fa-map mr-2"></i> Terrains</a>
+            <hr class="border-slate-800">
+            <button id="nav-auth-btn-mobile" onclick="openLoginModal(); toggleMobileMenu();" class="w-full text-left text-yellow-500 py-1 flex items-center bg-transparent">
+                <i class="fas fa-user-circle mr-2"></i> Espace Personnel
+            </button>
+        </div>
+    </nav>
+
+    <!-- AUTH MODAL -->
+    <div id="login-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full relative">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-black"><i class="fas fa-times"></i></button>
+            
+            <div class="flex border-b mb-6 font-black text-center text-sm uppercase tracking-wider">
+                <button id="tab-login-btn" onclick="switchAuthTab('login')" class="flex-1 pb-3 border-b-2 border-slate-900 text-slate-900">Connexion</button>
+                <button id="tab-register-btn" onclick="switchAuthTab('register')" class="flex-1 pb-3 border-b-2 border-transparent text-gray-400 hover:text-slate-900">Inscription</button>
+            </div>
+
+            <div id="form-login" class="space-y-4">
+                <input type="email" id="login-email" placeholder="Email" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <input type="password" id="login-pass" placeholder="Mot de passe" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <button onclick="handleLogin()" id="btn-login-exec" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-black transition">SE CONNECTER</button>
+            </div>
+
+            <div id="form-register" class="space-y-4 hidden">
+                <input type="text" id="reg-name" placeholder="Nom complet" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <input type="email" id="reg-email" placeholder="Adresse Email" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <input type="tel" id="reg-phone" placeholder="Numéro de téléphone" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <input type="password" id="reg-pass" placeholder="Mot de passe" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <button onclick="handleRegister()" id="btn-register-exec" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-black transition">S'INSCRIRE</button>
+            </div>
+            <p class="text-center text-xs text-gray-500 italic mt-4">L'inscription se fait automatiquement lors de votre premier achat de certification.</p>
+        </div>
+    </div>
+
+    <!-- INTEREST MODAL -->
+    <div id="interest-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full">
+            <h3 class="text-2xl font-black mb-2">Je suis intéressé</h3>
+            <p id="interest-prop-title" class="text-yellow-600 font-bold mb-6 text-sm"></p>
+            <div class="space-y-4">
+                <input type="hidden" id="interest-prop-id">
+                <input type="text" id="int-name" placeholder="Votre Nom complet" class="w-full p-4 bg-slate-50 border rounded-xl outline-none">
+                <input type="tel" id="int-tel" placeholder="Votre Numéro (Airtel Money/Moov)" class="w-full p-4 bg-slate-50 border rounded-xl outline-none">
+                <input type="email" id="int-email" placeholder="Votre Email" class="w-full p-4 bg-slate-50 border rounded-xl outline-none">
+                <div class="flex space-x-2">
+                    <button onclick="submitInterest()" id="btn-int-exec" class="flex-1 bg-slate-900 text-white py-4 rounded-xl font-bold">ENVOYER</button>
+                    <button onclick="closeInterestModal()" class="px-6 py-4 border rounded-xl font-bold">ANNULER</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETAIL BIEN COMPACT -->
+    <div id="property-detail-modal" class="fixed inset-0 bg-black/80 z-[150] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 relative">
+            <button onclick="closePropertyDetailModal()" class="absolute top-4 right-4 bg-slate-900 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-black z-20"><i class="fas fa-times"></i></button>
+            
+            <div class="relative h-72 md:h-96 bg-slate-900 rounded-2xl overflow-hidden mb-6 group">
+                <img id="detail-modal-img" src="" class="w-full h-full object-cover transition duration-500">
+                <button onclick="changeModalPhoto(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black transition"><i class="fas fa-chevron-left"></i></button>
+                <button onclick="changeModalPhoto(1)" class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black transition"><i class="fas fa-chevron-right"></i></button>
+                <div id="detail-modal-counter" class="absolute bottom-4 left-1/2 -translate-y-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-bold">1 / 1</div>
+            </div>
+
+            <div id="detail-modal-content" class="space-y-4">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span id="detail-modal-tag" class="px-3 py-1 bg-slate-100 text-slate-800 font-bold rounded-full text-xs uppercase"></span>
+                        <h3 id="detail-modal-title" class="text-2xl font-black mt-2 text-slate-900"></h3>
+                    </div>
+                    <p id="detail-modal-price" class="text-2xl font-black text-yellow-600"></p>
+                </div>
+                <hr class="border-gray-100">
+                <div class="bg-slate-50 p-4 rounded-xl border">
+                     <p class="text-xs font-bold text-gray-400 uppercase mb-1">Description du bien :</p>
+                     <p id="detail-modal-desc" class="text-slate-700 font-medium text-sm leading-relaxed whitespace-pre-line"></p>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border text-sm">
+                    <div><span class="text-gray-400 font-medium">Ville :</span> <b id="detail-modal-ville" class="text-slate-800"></b></div>
+                    <div><span class="text-gray-400 font-medium">Catégorie :</span> <b id="detail-modal-cat" class="text-slate-800"></b></div>
+                    <div><span class="text-gray-400 font-medium">Date de pub. :</span> <b id="detail-modal-date" class="text-slate-800"></b></div>
+                    <div><span class="text-gray-400 font-medium">Vues :</span> <b id="detail-modal-views" class="text-slate-800"></b></div>
+                </div>
+
+                <div id="detail-modal-received-box" class="bg-blue-50 p-5 rounded-2xl border border-blue-200 space-y-2 hidden">
+                    <h4 class="font-black text-blue-900 text-sm uppercase tracking-wide flex items-center"><i class="fas fa-id-card mr-2 text-blue-600"></i> Détails de l'intéressé (Reçu)</h4>
+                    <p class="text-sm"><b>Nom complet :</b> <span id="detail-rec-name" class="font-bold text-slate-800"></span></p>
+                    <p class="text-sm"><b>Téléphone :</b> <span id="detail-rec-tel" class="font-bold text-slate-800"></span></p>
+                    <p class="text-sm"><b>Adresse Email :</b> <span id="detail-rec-email" class="font-bold text-slate-800"></span></p>
+                    <p class="text-xs text-gray-400 italic mt-2">Formulaire soumis le : <span id="detail-rec-date"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN INTERFACE -->
+    <main id="main-content">
+        
+        <section id="home-section" class="py-8">
+            <header class="bg-slate-900 text-white py-12 px-4 text-center rounded-b-[3rem] shadow-2xl mb-12">
+                <h2 class="text-4xl font-extrabold mb-8">L'Immobilier au Gabon</h2>
+                
+                <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-4 text-slate-800">
+                    <select id="filter-type" class="p-3 border rounded-lg" onchange="toggleSubCat()">
+                        <option value="">Tous les types</option>
+                        <option value="Location">Location</option>
+                        <option value="Vente">Vente</option>
+                        <option value="Terrain">Terrain</option>
+                    </select>
+                    <select id="filter-ville" class="p-3 border rounded-lg">
+                        <option value="">Toutes les Villes</option>
+                        <option value="Libreville">Libreville</option>
+                        <option value="Akanda">Akanda</option>
+                        <option value="Port-Gentil">Port-Gentil</option>
+                        <option value="Ntoum">Ntoum</option>
+                    </select>
+                    <select id="filter-subcat" class="p-3 border rounded-lg">
+                        <option value="">Toutes les Catégories</option>
+                        <option value="Chambre">Chambre</option>
+                        <option value="Appartement">Appartement</option>
+                        <option value="Maison">Maison</option>
+                    </select>
+                    <button onclick="applyFilters()" id="btn-search-exec" class="bg-slate-900 text-white rounded-lg font-bold hover:bg-black transition py-3 md:py-0">
+                        <i class="fas fa-search"></i> RECHERCHER
+                    </button>
+                </div>
+            </header>
+
+            <div class="container mx-auto px-4 space-y-12">
+                <!-- SECTION SPONSORISÉE AVEC SELECTION PROBABILISTE -->
+                <div id="sponsored-section" class="hidden bg-gradient-to-r from-amber-500/10 via-yellow-500/5 to-transparent p-6 rounded-3xl border border-yellow-500/20 shadow-inner">
+                    <div class="flex items-center space-x-2 mb-6">
+                        <i class="fas fa-crown text-amber-500 text-xl animate-pulse"></i>
+                        <h3 class="text-2xl font-black italic tracking-tight uppercase text-slate-900">À la une (Sponsorisé)</h3>
+                    </div>
+                    <div id="sponsored-grid" class="grid grid-cols-1 md:grid-cols-3 gap-10"></div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-end mb-8 border-b pb-4">
+                        <h3 id="catalogue-title" class="text-2xl font-black italic">Dernières Opportunités</h3>
+                        <div class="flex space-x-3">
+                            <button id="btn-show-all" onclick="resetFilters()" class="hidden px-4 py-2 border rounded-full text-xs font-bold hover:bg-gray-100 uppercase tracking-tighter">Voir Tout</button>
+                            <button onclick="filterVerifiedOnly()" id="btn-verified-exec" class="px-4 py-2 gold-gradient rounded-full text-xs font-black uppercase tracking-tighter shadow-md">Vérifiés Seulement</button>
+                        </div>
+                    </div>
+
+                    <div id="properties-loader" class="flex flex-col items-center justify-center py-16 space-y-4">
+                        <i class="fas fa-circle-notch fa-spin text-4xl text-yellow-500"></i>
+                        <p class="text-sm font-bold text-slate-500 italic tracking-wide">Recherche des meilleures opportunités au Gabon...</p>
+                    </div>
+
+                    <div id="property-grid" class="grid grid-cols-1 md:grid-cols-3 gap-10 hidden"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DASHBOARD SECTION -->
+        <section id="dashboard-section" class="container mx-auto px-4 py-12 hidden">
+            <div class="flex flex-col md:flex-row gap-8">
+                <aside class="w-full md:w-1/4 bg-white rounded-3xl shadow-xl p-6 border border-gray-200 h-fit">
+                    <div class="text-center mb-8">
+                        <div class="w-24 h-24 bg-slate-200 rounded-full mx-auto mb-4 flex items-center justify-center relative border-4 border-white shadow-lg">
+                            <img id="dash-user-avatar" src="https://via.placeholder.com/96" class="w-full h-full object-cover rounded-full hidden">
+                            <i id="dash-user-icon" class="fas fa-user text-4xl text-slate-400"></i>
+                            <span id="dash-badge-icon" class="absolute -bottom-1 -right-1 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-gray-400 transition-colors duration-300 z-10">
+                                <i class="fas fa-certificate text-white text-xs"></i>
+                            </span>
+                        </div>
+                        <h4 id="dash-user-name" class="font-bold text-xl">Utilisateur</h4>
+                        <p id="dash-user-status" class="text-[10px] font-black uppercase tracking-widest mt-1"></p>
+                    </div>
+
+                    <nav class="space-y-2">
+                        <button onclick="switchDashTab('activities')" class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 font-bold transition flex items-center"><i class="fas fa-chart-pie mr-3"></i> Activités</button>
+                        <button onclick="switchDashTab('ads')" class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 font-bold transition flex items-center"><i class="fas fa-layer-group mr-3"></i> Mes Annonces</button>
+                        <button onclick="switchDashTab('interested')" class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 font-bold transition flex items-center"><i class="fas fa-exchange-alt mr-3 text-yellow-600"></i> Intéressés</button>
+                        <button onclick="switchDashTab('payments')" class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 font-bold transition flex items-center"><i class="fas fa-credit-card mr-3"></i> Paiements & Stats</button>
+                        <button onclick="switchDashTab('profile')" class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 font-bold transition flex items-center"><i class="fas fa-id-card mr-3"></i> Infos Personnelles</button>
+                        <button onclick="logout()" class="w-full text-left p-4 rounded-2xl hover:bg-red-50 text-red-500 font-bold border-t mt-4 transition flex items-center"><i class="fas fa-power-off mr-3"></i> Déconnexion</button>
+                    </nav>
+                </aside>
+
+                <div class="flex-1">
+                    <!-- SUB-TAB ACTIVITÉS AVEC DES GRAPHIAUES PROFESSIONNELS ET INTELLIGENTS -->
+                    <div id="tab-activities" class="space-y-6">
+                        <div id="premium-banner" class="hidden gold-gradient p-8 rounded-3xl shadow-xl flex justify-between items-center text-slate-900">
+                            <div>
+                                <h3 class="text-2xl font-black">VOTRE STATUT EST ACTIF</h3>
+                                <p class="font-medium italic">Visibilité maximale garantie ce mois.</p>
+                            </div>
+                            <i class="fas fa-crown text-4xl opacity-50"></i>
+                        </div>
+                        
+                        <!-- Mini-cards de navigation rapide -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div onclick="switchDashTab('ads')" class="bg-white p-8 rounded-3xl shadow-lg border border-gray-100 cursor-pointer hover:border-slate-300 transition">
+                                <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-2 flex justify-between items-center">
+                                    <span>Vues Annonces</span> <i class="fas fa-layer-group text-slate-400 text-xs"></i>
+                                </p>
+                                <p id="stat-views" class="text-4xl font-black italic">0</p>
+                            </div>
+                            <div onclick="switchDashTab('interested')" class="bg-white p-8 rounded-3xl shadow-lg border border-gray-100 cursor-pointer hover:border-slate-300 transition">
+                                <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-2 flex justify-between items-center">
+                                    <span>Personnes Intéressées</span> <i class="fas fa-exchange-alt text-yellow-600 text-xs"></i>
+                                </p>
+                                <p id="stat-leads" class="text-4xl font-black italic">0</p>
+                            </div>
+                            <div onclick="switchDashTab('payments')" class="bg-white p-8 rounded-3xl shadow-lg border border-gray-100 cursor-pointer hover:border-slate-300 transition">
+                                <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-2 flex justify-between items-center">
+                                    <span>Commission Totale</span> <i class="fas fa-credit-card text-slate-400 text-xs"></i>
+                                </p>
+                                <p id="stat-comm" class="text-4xl font-black italic">0 <small class="text-sm">FCFA</small></p>
+                            </div>
+                        </div>
+
+                        <!-- ZONE DES GRAPHIAUES PROFESSIONNELS -->
+                        <div class="bg-white p-6 rounded-3xl shadow-lg border border-gray-100">
+                            <h4 class="text-sm font-black uppercase tracking-wider text-slate-700 mb-4"><i class="fas fa-chart-line mr-2 text-indigo-500"></i> Graphique analytique des performances</h4>
+                            <div class="relative h-64 w-full">
+                                <canvas id="analyticsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUB-TAB GESTION DES BIENS -->
+                    <div id="tab-ads" class="hidden bg-white p-8 rounded-3xl shadow-lg">
+                        <h3 class="text-2xl font-black mb-6">Gestion des Biens</h3>
+                        <div id="user-ads-list" class="space-y-4"></div>
+                    </div>
+
+                    <!-- SUB-TAB INTÉRESSÉS -->
+                    <div id="tab-interested" class="hidden bg-white p-8 rounded-3xl shadow-lg">
+                        <h3 class="text-2xl font-black mb-4 flex items-center"><i class="fas fa-exchange-alt text-yellow-600 mr-2"></i> Formulaires Reçus / Envoyés</h3>
+                        <div class="flex border-b mb-6 font-black text-xs uppercase tracking-wider space-x-4">
+                            <button id="btn-int-received" onclick="switchInterestedSubTab('received')" class="pb-3 border-b-2 border-slate-900 text-slate-900">Reçus</button>
+                            <button id="btn-int-sent" onclick="switchInterestedSubTab('sent')" class="pb-3 border-b-2 border-transparent text-gray-400 hover:text-slate-900">Envoyés</button>
+                        </div>
+                        <div id="user-interested-list" class="space-y-4"></div>
+                    </div>
+
+                    <!-- SUB-TAB PAIEMENTS & TRANSACTION DETAILS TOTALES -->
+                    <div id="tab-payments" class="hidden bg-white p-8 rounded-3xl shadow-lg space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-black italic text-yellow-600 mb-6">Services Premium & Paiement</h3>
+                            <div class="grid md:grid-cols-2 gap-8">
+                                <div class="bg-slate-50 p-6 rounded-3xl border border-gray-200">
+                                    <h4 class="font-black text-lg mb-2 uppercase">Certification Blue</h4>
+                                    <p class="text-sm text-gray-500 mb-6 italic leading-relaxed">Affiche votre nom réel, votre numéro et vous place en tête de recherche.</p>
+                                    <p class="text-3xl font-black mb-6">25.000 <small class="text-xs">FCFA / mois</small></p>
+                                    <div class="space-y-3">
+                                        <input type="tel" id="pay-airtel-phone-1" placeholder="Numéro de l'expéditeur Airtel" class="w-full p-4 border rounded-2xl outline-none bg-white">
+                                        <input type="text" id="pay-airtel-id-1" placeholder="ID Transaction Airtel Money" class="w-full p-4 border rounded-2xl outline-none bg-white">
+                                        <button onclick="requestUpgrade('Blue')" id="btn-upgrade-blue" class="w-full gold-gradient py-4 rounded-2xl font-black text-sm shadow-lg uppercase tracking-widest">Activer via ID</button>
+                                    </div>
+                                </div>
+                                <div class="bg-slate-50 p-6 rounded-3xl border border-gray-200">
+                                    <h4 class="font-black text-lg mb-2 uppercase">Mise en avant Globale</h4>
+                                    <p class="text-sm text-gray-500 mb-6 italic leading-relaxed">Boostez votre compte de manière globale pour maximiser l'impact marketing.</p>
+                                    <p class="text-3xl font-black mb-6">10.000 <small class="text-xs">FCFA / boost</small></p>
+                                    <div class="space-y-3">
+                                        <input type="tel" id="pay-airtel-phone-2" placeholder="Numéro de l'expéditeur Airtel" class="w-full p-4 border rounded-2xl outline-none bg-white">
+                                        <input type="text" id="pay-airtel-id-2" placeholder="ID Transaction Airtel Money" class="w-full p-4 border rounded-2xl outline-none bg-white">
+                                        <button onclick="requestUpgrade('Boost')" id="btn-upgrade-boost" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-sm shadow-lg uppercase tracking-widest">Booster maintenant</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- HISTORIQUE COMPLET DES TRANSACTIONS FINANCIÈRES -->
+                        <div class="pt-4 border-t">
+                            <h3 class="text-xl font-black text-slate-800 mb-4 flex items-center"><i class="fas fa-history mr-2 text-slate-500"></i> Historique complet de vos transactions</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse text-sm">
+                                    <thead>
+                                        <tr class="bg-slate-100 text-slate-700 uppercase text-[10px] tracking-wider border-b">
+                                            <th class="p-4 font-black">Date & Heure</th>
+                                            <th class="p-4 font-black">Service</th>
+                                            <th class="p-4 font-black">Téléphone</th>
+                                            <th class="p-4 font-black">ID Transaction</th>
+                                            <th class="p-4 font-black">Statut</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="user-transactions-table" class="divide-y divide-gray-100 text-slate-700">
+                                        <tr>
+                                            <td colspan="5" class="p-4 text-center text-gray-400 italic">Aucun enregistrement trouvé.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUB-TAB PROFIL -->
+                    <div id="tab-profile" class="hidden bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
+                        <h3 class="text-2xl font-black mb-6 italic">Informations Personnelles</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="md:col-span-2 bg-slate-50 p-4 rounded-2xl border flex flex-col sm:flex-row items-center gap-4">
+                                <div class="w-20 h-20 bg-slate-200 rounded-full flex items-center justify-center border overflow-hidden relative">
+                                    <img id="prof-image-preview" src="https://via.placeholder.com/80" class="w-full h-full object-cover hidden">
+                                    <i id="prof-image-icon" class="fas fa-user text-3xl text-slate-400"></i>
+                                </div>
+                                <div class="flex-1 space-y-1">
+                                    <label class="block text-xs font-black uppercase text-gray-400">Photo de profil (Lien lh3.googleusercontent.com)</label>
+                                    <input type="file" id="profile-pic-file" accept="image/*" onchange="uploadProfilePhoto(this)" class="text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-black file:bg-slate-900 file:text-white hover:file:bg-black cursor-pointer">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black uppercase text-gray-400 mb-2">Nom Complet</label>
+                                <input type="text" id="prof-name-input" class="w-full p-4 bg-slate-50 rounded-xl border font-bold outline-none focus:ring-2 focus:ring-yellow-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black uppercase text-gray-400 mb-2">Email (Non modifiable)</label>
+                                <p id="prof-email" class="p-4 bg-slate-100 rounded-xl border font-bold text-gray-500"></p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black uppercase text-gray-400 mb-2">Téléphone</label>
+                                <input type="text" id="prof-tel" class="w-full p-4 bg-slate-50 rounded-xl border font-bold outline-none focus:ring-2 focus:ring-yellow-500">
+                            </div>
+                            <div class="flex items-end">
+                                <button onclick="updateProfile()" id="btn-update-prof" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold">Enregistrer les modifications</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- POST ANNONCE SECTION -->
+        <section id="post-property-section" class="container mx-auto px-4 py-12 hidden">
+            <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl p-10 border border-gray-100">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-black text-slate-900 uppercase tracking-tighter">Publier une Propriété</h2>
+                    <p class="text-gray-400 italic">Prenez jusqu'à 4 photos claires pour captiver nos investisseurs.</p>
+                </div>
+
+                <form id="propertyForm" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-5">
+                        <div>
+                            <label class="text-xs font-black uppercase text-gray-500">Type de bien</label>
+                            <select id="post-type" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none" onchange="togglePostSubCat()">
+                                <option value="Vente">À Vendre</option>
+                                <option value="Location">À Louer</option>
+                                <option value="Terrain">Terrain</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-black uppercase text-gray-500">Catégorie</label>
+                            <select id="post-cat" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                                <option value="Chambre">Chambre</option>
+                                <option value="Appartement">Appartement</option>
+                                <option value="Maison">Maison / Villa</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-black uppercase text-gray-500">Ville au Gabon</label>
+                            <select id="post-ville" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                                <option value="Libreville">Libreville</option>
+                                <option value="Akanda">Akanda</option>
+                                <option value="Port-Gentil">Port-Gentil</option>
+                                <option value="Ntoum">Ntoum</option>
+                            </select>
+                        </div>
+                        <input type="text" id="post-title" placeholder="Titre (ex: Superbe Studio Meublé)" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none" required>
+                        <input type="number" id="post-price" placeholder="Prix (FCFA)" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none" required>
+                        
+                        <div>
+                            <label class="text-xs font-black uppercase text-gray-500">Description détaillée du bien</label>
+                            <textarea id="post-desc" rows="4" placeholder="Donnez plus de détails sur les commodités, accès, sécurité..." class="w-full p-4 bg-slate-50 border rounded-2xl outline-none text-sm font-medium focus:ring-2 focus:ring-yellow-500" required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="space-y-5">
+                        <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-3xl p-10 text-center bg-slate-50 transition hover:border-yellow-500 group cursor-pointer relative">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-300 group-hover:text-yellow-500 mb-4 transition"></i>
+                            <p class="text-xs text-gray-500 font-bold italic uppercase">Glissez ou cliquez pour ajouter 4 photos max</p>
+                            <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
+                        </div>
+                        
+                        <div id="preview" class="grid grid-cols-4 gap-2 justify-center"></div>
+
+                        <div class="bg-blue-50 p-6 rounded-3xl border border-blue-100 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-sm font-black text-blue-900 uppercase italic">Devenir Partenaire Certifié</span>
+                                <input type="checkbox" id="check-certify" class="w-6 h-6 accent-blue-600" onchange="toggleCertifyInputs()">
+                            </div>
+                            <div id="certify-inputs" class="hidden space-y-3">
+                                <input type="tel" id="post-airtel-phone" placeholder="Numéro de l'expéditeur Airtel Money" class="w-full p-3 bg-white border rounded-xl outline-none text-sm">
+                                <input type="text" id="post-airtel-id" placeholder="ID Transaction Airtel Money (25.000 FCFA)" class="w-full p-3 bg-white border rounded-xl outline-none text-sm">
+                                <input type="tel" id="post-tel-owner" placeholder="Numéro de Téléphone Professionnel" class="w-full p-3 bg-white border rounded-xl outline-none text-sm">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" id="btn-post-exec" class="md:col-span-2 w-full bg-slate-900 text-white py-5 rounded-2xl font-black hover:bg-black shadow-xl tracking-wider uppercase">PUBLIER L'ANNONCE</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbzsWuxeceog0zQXl9wXVU_v0v1qL1_UO8A9d9P-SiuJbLJ4pDFaO8Jm6oRrzqdvJfxn5A/exec"; 
+        let allProperties = [];
+        let base64Files = [];
+        let currentUser = JSON.parse(localStorage.getItem('gabonbelle_user')) || null;
+        let currentInterestedTab = 'received';
+        
+        let modalActivePhotos = [];
+        let modalActiveIndex = 0;
+        let analyticsChartInstance = null; // Graphique analytique Chart.js
+
+        window.onload = function() {
+            updateAuthUI();
+            loadProperties();
+            setupDragAndDrop();
+        };
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Wrapper d'appel API global avec gestion de pro-loaders sur les boutons d'exécution
+        async function apiCall(action, data = {}, btnId = null) {
+            const btn = btnId ? document.getElementById(btnId) : null;
+            let originalContent = "";
+            if (btn) {
+                originalContent = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Traitement...';
+            }
+            try {
+                const resp = await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ action, data })
+                });
+                const res = await resp.json();
+                if (!res.success) throw new Error(res.error);
+                return res.data;
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                }
+            }
+        }
+
+        function switchCardPhoto(cardId, direction, event) {
+            if(event) event.stopPropagation();
+            const imgEl = document.getElementById(`img-card-${cardId}`);
+            if(!imgEl) return;
+            const photos = imgEl.dataset.photos.split(',');
+            let currentIndex = parseInt(imgEl.dataset.index || 0);
+            currentIndex += direction;
+            if(currentIndex >= photos.length) currentIndex = 0;
+            if(currentIndex < 0) currentIndex = photos.length - 1;
+            imgEl.src = photos[currentIndex].trim();
+            imgEl.dataset.index = currentIndex;
+            
+            const countEl = document.getElementById(`count-card-${cardId}`);
+            if(countEl) countEl.innerText = `${currentIndex + 1} / ${photos.length}`;
+        }
+
+        function showSection(id) {
+            document.getElementById('home-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.add('hidden');
+            document.getElementById('post-property-section').classList.add('hidden');
+            if(id === 'home') document.getElementById('home-section').classList.remove('hidden');
+            if(id === 'dashboard') {
+                document.getElementById('dashboard-section').classList.remove('hidden');
+                switchDashTab('activities');
+            }
+            if(id === 'post') document.getElementById('post-property-section').classList.remove('hidden');
+        }
+
+        function updateAuthUI() {
+            const btn = document.getElementById('nav-auth-btn');
+            const btnMobile = document.getElementById('nav-auth-btn-mobile');
+            if (currentUser) {
+                const innerTxt = `<i class="fas fa-tachometer-alt mr-2"></i> Mon Espace (${currentUser.name.split(' ')[0]})`;
+                btn.innerHTML = innerTxt;
+                btn.onclick = () => showSection('dashboard');
+                
+                if(btnMobile) {
+                    btnMobile.innerHTML = innerTxt;
+                    btnMobile.onclick = () => { showSection('dashboard'); toggleMobileMenu(); };
+                }
+                
+                document.getElementById('dash-user-name').innerText = currentUser.name;
+                document.getElementById('dash-user-status').innerText = currentUser.status === "On" ? "Membre Certifié Blue" : "Compte Standard";
+                document.getElementById('dash-user-status').className = currentUser.status === "On" ? "text-[10px] font-black uppercase tracking-widest mt-1 text-blue-500" : "text-[10px] font-black uppercase tracking-widest mt-1 text-gray-400";
+                
+                const badgeIconContainer = document.getElementById('dash-badge-icon');
+                if(currentUser.status === "On") {
+                    badgeIconContainer.className = "absolute -bottom-1 -right-1 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-blue-500 shadow-md z-10";
+                } else {
+                    badgeIconContainer.className = "absolute -bottom-1 -right-1 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-gray-400 z-10";
+                }
+
+                const avatarImg = document.getElementById('dash-user-avatar');
+                const avatarIcon = document.getElementById('dash-user-icon');
+                if(currentUser.image) {
+                    avatarImg.src = currentUser.image;
+                    avatarImg.classList.remove('hidden');
+                    avatarIcon.classList.add('hidden');
+                } else {
+                    avatarImg.classList.add('hidden');
+                    avatarIcon.classList.remove('hidden');
+                }
+            } else {
+                const baseTxt = `<i class="fas fa-user-circle mr-2"></i> Connexion`;
+                btn.innerHTML = baseTxt;
+                btn.onclick = openLoginModal;
+                if(btnMobile) {
+                    btnMobile.innerHTML = baseTxt;
+                    btnMobile.onclick = () => { openLoginModal(); toggleMobileMenu(); };
+                }
+            }
+        }
+
+        function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
+        function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
+        
+        function switchAuthTab(tab) {
+            const loginBtn = document.getElementById('tab-login-btn');
+            const regBtn = document.getElementById('tab-register-btn');
+            const loginForm = document.getElementById('form-login');
+            const regForm = document.getElementById('form-register');
+            if (tab === 'login') {
+                loginBtn.className = "flex-1 pb-3 border-b-2 border-slate-900 text-slate-900";
+                regBtn.className = "flex-1 pb-3 border-b-2 border-transparent text-gray-400 hover:text-slate-900";
+                loginForm.classList.remove('hidden');
+                regForm.classList.add('hidden');
+            } else {
+                regBtn.className = "flex-1 pb-3 border-b-2 border-slate-900 text-slate-900";
+                loginBtn.className = "flex-1 pb-3 border-b-2 border-transparent text-gray-400 hover:text-slate-900";
+                regForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+            }
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            if(!email || !pass) return showErrorModal("Veuillez remplir les champs");
+            try {
+                const user = await apiCall('authenticate', { email, pass }, 'btn-login-exec');
+                if(user) {
+                    currentUser = user;
+                    localStorage.setItem('gabonbelle_user', JSON.stringify(user));
+                    closeLoginModal();
+                    updateAuthUI();
+                    showSuccessModal("Ravi de vous revoir " + user.name + " !");
+                } else { showErrorModal("Identifiants incorrects."); }
+            } catch (e) { showErrorModal("Erreur de connexion au serveur."); }
+        }
+
+        async function handleRegister() {
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const phone = document.getElementById('reg-phone').value;
+            const pass = document.getElementById('reg-pass').value;
+            if(!name || !email || !phone || !pass) return showErrorModal("Veuillez remplir tous les champs");
+            try {
+                const user = await apiCall('register', { name, email, phone, pass }, 'btn-register-exec');
+                if(user) {
+                    currentUser = user;
+                    localStorage.setItem('gabonbelle_user', JSON.stringify(user));
+                    closeLoginModal();
+                    updateAuthUI();
+                    showSuccessModal("Inscription validée !");
+                }
+            } catch (e) { showErrorModal(e.message); }
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('gabonbelle_user');
+            location.reload();
+        }
+
+        function uploadProfilePhoto(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    const base64Data = e.target.result;
+                    try {
+                        showSuccessModal("Téléchargement de votre photo de profil...");
+                        const updatedUser = await apiCall('updateProfilePhoto', { email: currentUser.email, imageBase64: base64Data });
+                        currentUser = updatedUser;
+                        localStorage.setItem('gabonbelle_user', JSON.stringify(currentUser));
+                        updateAuthUI();
+                        
+                        document.getElementById('prof-image-preview').src = currentUser.image;
+                        document.getElementById('prof-image-preview').classList.remove('hidden');
+                        document.getElementById('prof-image-icon').classList.add('hidden');
+                    } catch(err) {
+                        showErrorModal("Erreur lors de la mise à jour de la photo.");
+                    }
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Chargement des propriétés avec système probabiliste de Bidding / Pourcentage
+        async function loadProperties() {
+            const loader = document.getElementById('properties-loader');
+            const grid = document.getElementById('property-grid');
+            try {
+                allProperties = await apiCall('getAllProperties');
+                
+                // Sélection adaptative et intelligente des annonces sponsorisées à afficher basées sur le pourcentage de bidding
+                const boostedPool = allProperties.filter(p => p.isBoosted === "On" || p.isBoosted === true || p.isBoosted === "true");
+                const eligibleBoosted = boostedPool.filter(p => {
+                    const score = parseFloat(p.pourcentage || 100); 
+                    return Math.random() * 100 <= score;
+                });
+                
+                // On limite l'affichage à 3 annonces pour une session fluide et performante
+                const selectedBoosted = eligibleBoosted.slice(0, 3);
+
+                const sponsoredSection = document.getElementById('sponsored-section');
+                if(selectedBoosted.length > 0) {
+                    renderGrid('sponsored-grid', selectedBoosted, true);
+                    sponsoredSection.classList.remove('hidden');
+                } else { sponsoredSection.classList.add('hidden'); }
+
+                const sortedProperties = [...allProperties].sort((a, b) => {
+                    const boostA = (a.isBoosted === "On" || a.isBoosted === true) ? 1 : 0;
+                    const boostB = (b.isBoosted === "On" || b.isBoosted === true) ? 1 : 0;
+                    return boostB - boostA;
+                });
+                renderGrid('property-grid', sortedProperties, false);
+                if(loader) loader.classList.add('hidden');
+                if(grid) grid.classList.remove('hidden');
+            } catch (e) {
+                if(loader) loader.innerHTML = '<p class="text-rose-500 font-bold"><i class="fas fa-exclamation-triangle"></i> Échec du chargement des biens.</p>';
+            }
+        }
+
+        function renderGrid(gridId, data, isSponsored = false) {
+            const grid = document.getElementById(gridId);
+            grid.innerHTML = '';
+            data.forEach(p => {
+                const isBlue = p.ownerStatus === "On";
+                const badge = isBlue ? '<i class="fas fa-check-circle blue-verify ml-1" title="Vérifié"></i>' : '';
+                const imagesArray = p.img ? p.img.split(',') : ['https://via.placeholder.com/400x300'];
+                const firstImg = imagesArray[0].trim();
+                const ownerPic = p.ownerImage ? p.ownerImage : 'https://via.placeholder.com/32';
+                const phoneDisplay = isBlue ? `<span class="block text-xs font-black text-emerald-600 mt-1"><i class="fas fa-phone-alt mr-1"></i> ${p.ownerPhone}</span>` : '';
+
+                // Condition pour afficher le bouton Boost
+                let boostButtonHtml = "";
+                if(currentUser && currentUser.email.toLowerCase().trim() === p.ownerEmail.toLowerCase().trim() && p.isBoosted !== "On") {
+                    boostButtonHtml = `<button onclick="openBoostModal('${p.id}', '${p.title.replace(/'/g, "\\'")}', event)" class="mt-2 w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-900 font-black py-2 rounded-xl text-xs hover:scale-105 transition transform shadow"><i class="fas fa-rocket mr-1"></i> BOOSTER CETTE ANNONCE</button>`;
+                }
+
+                grid.innerHTML += `
+                    <div class="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100 property-card flex flex-col relative cursor-pointer" onclick="viewCounterIncrementAndOpen('${p.id}', ${JSON.stringify(p).replace(/"/g, '&quot;')})">
+                        <div class="relative h-56 bg-slate-100 overflow-hidden group">
+                            <img id="img-card-${p.id}" src="${firstImg}" data-photos="${imagesArray.join(',')}" data-index="0" class="w-full h-full object-cover">
+                            
+                            ${imagesArray.length > 1 ? `
+                                <button onclick="switchCardPhoto('${p.id}', -1, event)" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-10"><i class="fas fa-chevron-left text-xs"></i></button>
+                                <button onclick="switchCardPhoto('${p.id}', 1, event)" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-10"><i class="fas fa-chevron-right text-xs"></i></button>
+                                <span id="count-card-${p.id}" class="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">${1} / ${imagesArray.length}</span>
+                            ` : ''}
+                            
+                            <span class="absolute top-4 left-4 bg-slate-900/80 text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">${p.type}</span>
+                        </div>
+                        <div class="p-6 flex flex-col flex-1">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xs font-black uppercase text-yellow-600 tracking-widest">${p.cat} à ${p.ville}</span>
+                                <span class="text-xs text-gray-400 font-bold"><i class="far fa-calendar-alt mr-1"></i> ${p.date || 'Récente'}</span>
+                            </div>
+                            <h4 class="font-bold text-lg mb-2 text-slate-800 line-clamp-1">${p.title}</h4>
+                            <p class="text-xl font-black text-slate-900 mb-1">${Number(p.price).toLocaleString()} <small class="text-xs font-bold text-gray-400">FCFA</small></p>
+                            ${phoneDisplay}
+                            
+                            <div class="mt-auto pt-4 border-t flex justify-between items-center text-xs text-gray-500">
+                                <div class="flex items-center space-x-1.5">
+                                    <img src="${ownerPic}" class="w-6 h-6 rounded-full object-cover border shadow-sm">
+                                    <span class="font-bold text-slate-700">${p.ownerName}</span> ${badge}
+                                </div>
+                                <span class="flex items-center text-gray-400 font-bold"><i class="fas fa-eye mr-1 text-xs"></i> ${p.views || 0}</span>
+                            </div>
+                            ${boostButtonHtml}
+                            <button onclick="openInterestModal('${p.id}', '${p.title.replace(/'/g, "\\'")}', event)" class="w-full mt-3 bg-slate-900 text-white font-black py-3 rounded-xl hover:bg-yellow-500 hover:text-slate-900 transition text-sm">S'INTÉRESSER</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // Système de comptage de vues interactif et incrémentation synchrone
+        async function viewCounterIncrementAndOpen(propId, p) {
+            openPropertyDetailModal(p); 
+            try {
+                // Appel API d'arrière-plan pour incrémenter la vue sur la feuille de calcul Google Sheets
+                await apiCall('incrementViews', { id: propId });
+            } catch(e) {
+                console.error("Erreur de compteur de vue:", e);
+            }
+        }
+
+        // Fonctions d'ouverture de l'architecture Boost
+        function openBoostModal(id, title, event) {
+            if(event) event.stopPropagation();
+            document.getElementById('boost-prop-id').value = id;
+            document.getElementById('boost-prop-title').innerText = `Bien ciblé : ${title}`;
+            document.getElementById('boost-modal').classList.remove('hidden');
+        }
+        function closeBoostModal() { document.getElementById('boost-modal').classList.add('hidden'); }
+
+        async function submitBoostPayment() {
+            const propId = document.getElementById('boost-prop-id').value;
+            const phone = document.getElementById('boost-phone').value;
+            const txId = document.getElementById('boost-tx-id').value;
+            if(!phone || !txId) return showErrorModal("Veuillez renseigner tous les détails du paiement Airtel Money.");
+            try {
+                await apiCall('requestAnnonceBoost', { email: currentUser.email, propId: propId, airtelPhone: phone, airtelTransactionId: txId }, 'btn-boost-exec');
+                closeBoostModal();
+                showSuccessModal("Votre demande de boost a été enregistrée avec succès. Elle s'affichera dès sa validation administrative !");
+            } catch(e) {
+                showErrorModal("Erreur lors de la transmission de votre requête.");
+            }
+        }
+
+        function openPropertyDetailModal(p, receivedFormData = null) {
+            modalActivePhotos = p.img ? p.img.split(',') : ['https://via.placeholder.com/640x480'];
+            modalActiveIndex = 0;
+            
+            document.getElementById('detail-modal-img').src = modalActivePhotos[0].trim();
+            document.getElementById('detail-modal-counter').innerText = `1 / ${modalActivePhotos.length}`;
+            
+            document.getElementById('detail-modal-tag').innerText = p.type;
+            document.getElementById('detail-modal-title').innerText = p.title;
+            document.getElementById('detail-modal-price').innerText = `${Number(p.price).toLocaleString()} FCFA`;
+            document.getElementById('detail-modal-desc').innerText = p.description || "Aucune description fournie par l'auteur.";
+            
+            document.getElementById('detail-modal-ville').innerText = p.ville;
+            document.getElementById('detail-modal-cat').innerText = p.cat;
+            document.getElementById('detail-modal-date').innerText = p.date || 'Non spécifiée';
+            document.getElementById('detail-modal-views').innerText = `${p.views || 0} vues`;
+
+            const receivedBox = document.getElementById('detail-modal-received-box');
+            if (receivedFormData) {
+                document.getElementById('detail-rec-name').innerText = receivedFormData.name;
+                document.getElementById('detail-rec-tel').innerText = receivedFormData.tel;
+                document.getElementById('detail-rec-email').innerText = receivedFormData.email;
+                document.getElementById('detail-rec-date').innerText = receivedFormData.timestamp;
+                receivedBox.classList.remove('hidden');
+            } else {
+                receivedBox.classList.add('hidden');
+            }
+            document.getElementById('property-detail-modal').classList.remove('hidden');
+        }
+
+        function closePropertyDetailModal() { document.getElementById('property-detail-modal').classList.add('hidden'); }
+
+        function changeModalPhoto(direction) {
+            modalActiveIndex += direction;
+            if(modalActiveIndex >= modalActivePhotos.length) modalActiveIndex = 0;
+            if(modalActiveIndex < 0) modalActiveIndex = modalActivePhotos.length - 1;
+            document.getElementById('detail-modal-img').src = modalActivePhotos[modalActiveIndex].trim();
+            document.getElementById('detail-modal-counter').innerText = `${modalActiveIndex + 1} / ${modalActivePhotos.length}`;
+        }
+
+        function openInterestModal(id, title, event) {
+            if(event) event.stopPropagation();
+            document.getElementById('interest-prop-id').value = id;
+            document.getElementById('interest-prop-title').innerText = title;
+            document.getElementById('interest-modal').classList.remove('hidden');
+        }
+        function closeInterestModal() { document.getElementById('interest-modal').classList.add('hidden'); }
+
+        async function submitInterest() {
+            const data = {
+                propId: document.getElementById('interest-prop-id').value,
+                propTitle: document.getElementById('interest-prop-title').innerText,
+                name: document.getElementById('int-name').value,
+                tel: document.getElementById('int-tel').value,
+                email: document.getElementById('int-email').value,
+                timestamp: new Date().toLocaleString()
+            };
+            if(!data.name || !data.tel) return showErrorModal("Veuillez renseigner les champs requis.");
+            try {
+                await apiCall('saveInterest', data, 'btn-int-exec');
+                showSuccessModal("Votre intérêt a bien été transmis au vendeur !");
+                closeInterestModal();
+                loadProperties();
+            } catch (e) { showErrorModal("Erreur lors de l'envoi."); }
+        }
+
+        function switchDashTab(tab) {
+            document.getElementById('tab-activities').classList.add('hidden');
+            document.getElementById('tab-ads').classList.add('hidden');
+            document.getElementById('tab-interested').classList.add('hidden');
+            document.getElementById('tab-payments').classList.add('hidden');
+            document.getElementById('tab-profile').classList.add('hidden');
+            
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            if(tab === 'activities') loadUserStatsAndActivities();
+            if(tab === 'ads') loadUserAds();
+            if(tab === 'interested') loadUserInterestedForms();
+            if(tab === 'payments') loadUserTransactionsHistory();
+            if(tab === 'profile') {
+                document.getElementById('prof-name-input').value = currentUser.name;
+                document.getElementById('prof-email').innerText = currentUser.email;
+                document.getElementById('prof-tel').value = currentUser.phone || '';
+                
+                const pImg = document.getElementById('prof-image-preview');
+                const pIcon = document.getElementById('prof-image-icon');
+                if(currentUser.image) {
+                    pImg.src = currentUser.image;
+                    pImg.classList.remove('hidden');
+                    pIcon.classList.add('hidden');
+                } else {
+                    pImg.classList.add('hidden');
+                    pIcon.classList.remove('hidden');
+                }
+            }
+        }
+
+        async function loadUserStatsAndActivities() {
+            try {
+                const stats = await apiCall('getUserStats', { email: currentUser.email });
+                if(stats) {
+                    document.getElementById('stat-views').innerText = stats.views || 0;
+                    document.getElementById('stat-leads').innerText = stats.leads || 0;
+                    document.getElementById('stat-comm').innerHTML = `${Number(stats.commissions || 0).toLocaleString()} <small class="text-sm">FCFA</small>`;
+                    
+                    if (stats.status) currentUser.status = stats.status;
+                    if (stats.image !== undefined) currentUser.image = stats.image;
+                    localStorage.setItem('gabonbelle_user', JSON.stringify(currentUser));
+                    updateAuthUI(); 
+
+                    // Initialisation ou rafraîchissement du graphique Chart.js
+                    renderAnalyticsChart(stats.views || 0, stats.leads || 0, stats.adsCount || 0);
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // Fonction de construction de graphique analytique d'activité
+        function renderAnalyticsChart(views, leads, ads) {
+            const ctx = document.getElementById('analyticsChart').getContext('2d');
+            if (analyticsChartInstance) {
+                analyticsChartInstance.destroy(); // Éviter l'accumulation de graphiques fantômes
+            }
+            analyticsChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mes Annonces', 'Vues Totales', 'Formulaires Intérêts'],
+                    datasets: [{
+                        label: 'Performances du Compte',
+                        data: [ads, views, leads],
+                        backgroundColor: [
+                            'rgba(212, 175, 55, 0.6)',  // Or
+                            'rgba(29, 161, 242, 0.6)',  // Bleu
+                            'rgba(16, 185, 129, 0.6)'   // Vert émeraude
+                        ],
+                        borderColor: [
+                            'rgba(212, 175, 55, 1)',
+                            'rgba(29, 161, 242, 1)',
+                            'rgba(16, 185, 129, 1)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        async function loadUserAds() {
+            const list = document.getElementById('user-ads-list');
+            list.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-yellow-500"></i> Chargement...</div>';
+            try {
+                const ads = await apiCall('getUserAds', { email: currentUser.email });
+                list.innerHTML = ads.length ? '' : '<p class="text-gray-400 italic">Aucune annonce enregistrée.</p>';
+                ads.forEach(ad => {
+                    list.innerHTML += `
+                        <div class="p-4 bg-slate-50 rounded-2xl border flex justify-between items-center hover:bg-slate-100 transition cursor-pointer" onclick='openPropertyDetailModal(${JSON.stringify(ad).replace(/"/g, '&quot;')})'>
+                            <div class="flex items-center space-x-3">
+                                <img src="${ad.img ? ad.img.split(',')[0] : 'https://via.placeholder.com/40'}" class="w-10 h-10 object-cover rounded-xl">
+                                <div>
+                                    <b class="text-slate-800 block">${ad.title}</b>
+                                    <span class="text-xs text-gray-400 font-bold">${ad.ville} • ${ad.cat} • <i class="fas fa-eye text-[10px]"></i> ${ad.views || 0}</span>
+                                </div>
+                            </div>
+                            <span class="font-black text-slate-900">${Number(ad.price).toLocaleString()} FCFA</span>
+                        </div>`;
+                });
+            } catch(e) {}
+        }
+
+        function switchInterestedSubTab(type) {
+            currentInterestedTab = type;
+            const bRec = document.getElementById('btn-int-received');
+            const bSent = document.getElementById('btn-int-sent');
+            if (type === 'received') {
+                bRec.className = "pb-3 border-b-2 border-slate-900 text-slate-900";
+                bSent.className = "pb-3 border-b-2 border-transparent text-gray-400 hover:text-slate-900";
+            } else {
+                bSent.className = "pb-3 border-b-2 border-slate-900 text-slate-900";
+                bRec.className = "pb-3 border-b-2 border-transparent text-gray-400 hover:text-slate-900";
+            }
+            loadUserInterestedForms();
+        }
+
+        async function loadUserInterestedForms() {
+            const list = document.getElementById('user-interested-list');
+            list.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-yellow-500"></i> Chargement...</div>';
+            try {
+                const res = await apiCall('getUserInterestedForms', { email: currentUser.email, type: currentInterestedTab });
+                list.innerHTML = res.length ? '' : `<p class="text-gray-400 italic">Aucun formulaire ${currentInterestedTab === 'received' ? 'reçu' : 'envoyé'}.</p>`;
+                res.forEach(item => {
+                    const ad = item.propertyInfo;
+                    list.innerHTML += `
+                        <div class="p-4 bg-slate-50 rounded-2xl border flex flex-col sm:flex-row justify-between sm:items-center hover:bg-slate-100 transition cursor-pointer gap-2" onclick='openPropertyDetailModal(${JSON.stringify(ad).replace(/"/g, '&quot;')}, ${currentInterestedTab === 'received' ? JSON.stringify(item).replace(/"/g, '&quot;') : 'null'})'>
+                            <div>
+                                <span class="text-[10px] uppercase font-black px-2 py-0.5 rounded-full ${currentInterestedTab === 'received' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}">${currentInterestedTab === 'received' ? 'Reçu de : ' + item.name : 'Vous avez exprimé votre intérêt'}</span>
+                                <h4 class="font-bold text-slate-800 mt-1">${ad ? ad.title : item.propTitle}</h4>
+                                <p class="text-xs text-gray-400 italic">${item.timestamp}</p>
+                            </div>
+                            <div class="text-right sm:border-l sm:pl-4">
+                                <span class="text-xs block text-gray-400 font-medium">Prix du bien</span>
+                                <b class="text-sm font-black text-slate-900">${ad ? Number(ad.price).toLocaleString() : '0'} FCFA</b>
+                            </div>
+                        </div>`;
+                });
+            } catch(e) { list.innerHTML = '<p class="text-rose-500 text-sm">Erreur de chargement.</p>'; }
+        }
+
+        // Chargement de l'historique complet des transactions
+        async function loadUserTransactionsHistory() {
+            const tableBody = document.getElementById('user-transactions-table');
+            tableBody.innerHTML = '<tr><td colspan="5" class="p-4 text-center"><i class="fas fa-spinner fa-spin text-yellow-500"></i> Traitement...</td></tr>';
+            try {
+                const txs = await apiCall('getUserTransactions', { email: currentUser.email });
+                tableBody.innerHTML = txs.length ? '' : '<tr><td colspan="5" class="p-4 text-center text-gray-400 italic">Aucune transaction trouvée.</td></tr>';
+                txs.forEach(t => {
+                    let statusClass = "bg-yellow-100 text-yellow-800";
+                    if(t.status === "Validé") statusClass = "bg-emerald-100 text-emerald-800";
+                    if(t.status === "Refusé") statusClass = "bg-rose-100 text-rose-800";
+                    
+                    tableBody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="p-4 font-medium">${t.date}</td>
+                            <td class="p-4"><span class="font-bold">${t.type}</span></td>
+                            <td class="p-4 font-mono">${t.phone}</td>
+                            <td class="p-4 font-mono text-slate-500">${t.txId}</td>
+                            <td class="p-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide ${statusClass}">${t.status}</span></td>
+                        </tr>`;
+                });
+            } catch(e) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-rose-500 font-bold">Erreur réseau.</td></tr>';
+            }
+        }
+
+        async function updateProfile() {
+            const name = document.getElementById('prof-name-input').value;
+            const phone = document.getElementById('prof-tel').value;
+            if(!name) return showErrorModal("Le nom ne peut pas être vide.");
+            try {
+                const updated = await apiCall('updateProfile', { email: currentUser.email, name, phone }, 'btn-update-prof');
+                currentUser = updated;
+                localStorage.setItem('gabonbelle_user', JSON.stringify(currentUser));
+                updateAuthUI();
+                showSuccessModal("Profil mis à jour avec succès !");
+            } catch(e) { showErrorModal("Échec de la mise à jour."); }
+        }
+
+        async function requestUpgrade(type) {
+            let phoneInput, idInput, execId;
+            if(type === 'Blue') {
+                phoneInput = document.getElementById('pay-airtel-phone-1').value;
+                idInput = document.getElementById('pay-airtel-id-1').value;
+                execId = 'btn-upgrade-blue';
+            } else {
+                phoneInput = document.getElementById('pay-airtel-phone-2').value;
+                idInput = document.getElementById('pay-airtel-id-2').value;
+                execId = 'btn-upgrade-boost';
+            }
+            if(!phoneInput || !idInput) return showErrorModal("Champs d'envoi requis manquants.");
+            try {
+                await apiCall('requestUpgrade', { email: currentUser.email, upgradeType: type, airtelPhone: phoneInput, airtelTransactionId: idInput }, execId);
+                showSuccessModal("Demande Premium enregistrée !");
+                loadUserTransactionsHistory();
+            } catch(e) { showErrorModal("Erreur de transmission."); }
+        }
+
+        function setupDragAndDrop() {
+            const zone = document.getElementById('drop-zone');
+            const input = document.getElementById('fileInput');
+            if(!zone) return;
+            zone.onclick = () => input.click();
+            input.onchange = (e) => handleFiles(e.target.files);
+            zone.ondragover = (e) => { e.preventDefault(); zone.classList.add('drag-over'); };
+            zone.ondragleave = () => zone.classList.remove('drag-over');
+            zone.ondrop = (e) => { e.preventDefault(); zone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); };
+        }
+
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (base64Files.length >= 4) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    base64Files.push(e.target.result);
+                    renderPhotoPreviews();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function renderPhotoPreviews() {
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '';
+            base64Files.forEach((src, idx) => {
+                preview.innerHTML += `
+                    <div class="relative w-20 h-20 border rounded-2xl overflow-hidden shadow">
+                        <img src="${src}" class="w-full h-full object-cover">
+                        <button type="button" onclick="removeSelectedPhoto(${idx})" class="absolute top-1 right-1 bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-black shadow hover:bg-rose-800 transition z-10">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>`;
+            });
+        }
+
+        function removeSelectedPhoto(index) {
+            base64Files.splice(index, 1);
+            renderPhotoPreviews();
+        }
+
+        function checkAuthAndPost() {
+            if(!currentUser) return openLoginModal();
+            showSection('post');
+        }
+
+        function toggleCertifyInputs() {
+            const isChecked = document.getElementById('check-certify').checked;
+            const container = document.getElementById('certify-inputs');
+            if(isChecked) container.classList.remove('hidden');
+            else container.classList.add('hidden');
+        }
+
+        document.getElementById('propertyForm').onsubmit = async function(e) {
+            e.preventDefault();
+            if(!currentUser) return openLoginModal();
+            
+            const payload = {
+                ownerEmail: currentUser.email,
+                ownerName: currentUser.name,
+                type: document.getElementById('post-type').value,
+                cat: document.getElementById('post-cat').value,
+                ville: document.getElementById('post-ville2' ? 'post-ville' : 'post-ville').value,
+                title: document.getElementById('post-title').value,
+                price: document.getElementById('post-price').value,
+                description: document.getElementById('post-desc').value,
+                isPremium: document.getElementById('check-certify').checked,
+                airtelPhone: document.getElementById('post-airtel-phone').value,
+                airtelTransactionId: document.getElementById('post-airtel-id').value,
+                ownerPhone: document.getElementById('post-tel-owner').value || currentUser.phone || "",
+                images: base64Files,
+                date: new Date().toLocaleDateString('fr-FR')
+            };
+
+            try {
+                await apiCall('submitPost', payload, 'btn-post-exec');
+                showSuccessModal("Annonce publiée avec succès !");
+                setTimeout(() => { location.reload(); }, 2000);
+            } catch(err) {
+                showErrorModal("Erreur lors de la publication de la propriété.");
+            }
+        };
+
+        function togglePostSubCat() {
+            const type = document.getElementById('post-type').value;
+            const catSelect = document.getElementById('post-cat');
+            if (type === 'Terrain') {
+                catSelect.innerHTML = '<option value="Terrain">Terrain Résidentiel</option><option value="Terrain">Terrain Commercial</option>';
+            } else {
+                catSelect.innerHTML = '<option value="Chambre">Chambre</option><option value="Appartement">Appartement</option><option value="Maison">Maison / Villa</option>';
+            }
+        }
+
+        function toggleSubCat() {
+            const type = document.getElementById('filter-type').value;
+            const sub = document.getElementById('filter-subcat');
+            if(type === 'Terrain') {
+                sub.innerHTML = '<option value="Terrain">Terrain</option>';
+            } else {
+                sub.innerHTML = '<option value="">Toutes les Catégories</option><option value="Chambre">Chambre</option><option value="Appartement">Appartement</option><option value="Maison">Maison</option>';
+            }
+        }
+
+        function applyFilters() {
+            const type = document.getElementById('filter-type').value;
+            const ville = document.getElementById('filter-ville').value;
+            const cat = document.getElementById('filter-subcat').value;
+            const filtered = allProperties.filter(p => (!type || p.type === type) && (!ville || p.ville === ville) && (!cat || p.cat === cat));
+            document.getElementById('btn-show-all').classList.remove('hidden');
+            renderGrid('property-grid', filtered);
+        }
+
+        function filterQuick(type) {
+            document.getElementById('filter-type').value = type;
+            toggleSubCat();
+            applyFilters();
+            showSection('home');
+        }
+
+        function resetFilters() {
+            document.getElementById('filter-type').value = "";
+            document.getElementById('filter-ville').value = "";
+            document.getElementById('filter-subcat').value = "";
+            loadProperties();
+            document.getElementById('btn-show-all').classList.add('hidden');
+        }
+
+        function filterVerifiedOnly() {
+            renderGrid('property-grid', allProperties.filter(p => p.ownerStatus === "On"));
+            document.getElementById('btn-show-all').classList.remove('hidden');
+        }
+
+        function showSuccessModal(msg) { document.getElementById('modal-success-msg').innerText = msg; document.getElementById('modal-success').classList.remove('hidden'); }
+        function closeSuccessModal() { document.getElementById('modal-success').classList.add('hidden'); }
+        function showErrorModal(msg) { document.getElementById('modal-error-msg').innerText = msg; document.getElementById('modal-error').classList.remove('hidden'); }
+        function closeErrorModal() { document.getElementById('modal-error').classList.add('hidden'); }
+    </script>
+</body>
+</html>
