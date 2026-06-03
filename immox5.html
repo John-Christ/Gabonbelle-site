@@ -269,6 +269,10 @@
         <section id="dashboard-section" class="container mx-auto px-4 py-12 hidden">
             <div class="flex flex-col md:flex-row gap-8">
                 <aside class="w-full md:w-1/4 bg-white rounded-3xl shadow-xl p-6 border border-gray-200 h-fit">
+                   
+
+
+                    
                     <div class="text-center mb-8">
                         <div class="w-24 h-24 bg-slate-200 rounded-full mx-auto mb-4 flex items-center justify-center relative border-4 border-white shadow-lg">
                             <img id="dash-user-avatar" src="https://via.placeholder.com/96" class="w-full h-full object-cover rounded-full hidden">
@@ -280,6 +284,9 @@
                         <h4 id="dash-user-name" class="font-bold text-xl">Utilisateur</h4>
                         <p id="dash-user-status" class="text-[10px] font-black uppercase tracking-widest mt-1"></p>
                     </div>
+
+
+                    
                     
                     <nav class="space-y-2">
                         <button onclick="switchDashTab('activities')" class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 font-bold transition flex items-center"><i class="fas fa-chart-pie mr-3"></i> Activités</button>
@@ -927,6 +934,7 @@
                     document.getElementById('stat-comm').innerHTML = `${Number(stats.commissions || 0).toLocaleString()} <small class="text-sm">FCFA</small>`;
                     
                     if (stats.status) currentUser.status = stats.status;
+                      if (stats.image !== undefined) currentUser.image = stats.image;
                     localStorage.setItem('gabonbelle_user', JSON.stringify(currentUser));
                     updateAuthUI(); 
                     
@@ -937,6 +945,15 @@
                 console.error("Erreur de rafraîchissement des stats utilisateur:", e);
             }
         }
+
+
+
+
+
+
+
+
+        
 
         function initActivitiesChart(views, leads, commissions) {
             const ctx = document.getElementById('chartActivities').getContext('2d');
