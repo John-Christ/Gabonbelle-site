@@ -721,11 +721,57 @@
             }
         }
 
+     
+        
+        
         async function loadProperties() {
+    const loader = document.getElementById('properties-loader');
+    const grid = document.getElementById('property-grid');
+    try {
+        allProperties = await apiCall('getAllProperties');
+
+        // --- DÉBUT DE LA MODIFICATION POUR LE BADGE ---
+        if (currentUser && currentUser.email) {
+            // On cherche une annonce appartenant à l'utilisateur connecté
+            const myData = allProperties.find(p => p.ownerEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim());
+            if (myData && myData.ownerStatus !== currentUser.status) {
+                // Mise à jour de l'objet en mémoire
+                currentUser.status = myData.ownerStatus;
+                // Mise à jour du localStorage pour que ce soit permanent
+                localStorage.setItem('gabonbelle_user', JSON.stringify(currentUser));
+                // Rafraîchissement de l'interface (nom, photo et badge)
+                if (typeof updateAuthUI === 'function') updateAuthUI();
+            }
+        }
+        // --- FIN DE LA MODIFICATION ---
+
+        // ORGANISE ET FILTRE LE RECOURS SPONSORISÉ PAR POURCENTAGE DE ENCHÈRE (BIDDING)
+        const boostedProperties = allProperties.filter(p => p.isBoosted === "On" || p.isBoosted === true || p.isBoosted === "true");
+        boostedProperties.sort((a, b) => (b.pourcentage || 0) - (a.pourcentage || 0));
+        
+        const sponsoredSection = document.getElementById('sponsored-section');
+        if(boostedProperties.length > 0) {
+            renderGrid('sponsored-grid', boostedProperties);
+            sponsoredSection.classList.remove('hidden');
+        } else { sponsoredSection.classList.add('hidden'); }
+
+        applyFiltersAndSorting();
+        if(loader) loader.classList.add('hidden');
+        if(grid) grid.classList.remove('hidden');
+    } catch (e) {
+        console.error(e);
+        if(loader) loader.innerHTML = '<p class="text-rose-500 font-bold"><i class="fas fa-exclamation-triangle"></i> Échec du chargement des biens.</p>';
+    }
+}
+        
+        
+        
+        
+        /*async function loadProperties() {
             const loader = document.getElementById('properties-loader');
             const grid = document.getElementById('property-grid');
             try {
-                allProperties = await apiCall('getAllProperties');
+                allProperties = await apiCall('getAllProperties');          
                 
                 // ORGANISE ET FILTRE LE RECOURS SPONSORISÉ PAR POURCENTAGE DE ENCHÈRE (BIDDING)
                 const boostedProperties = allProperties.filter(p => p.isBoosted === "On" || p.isBoosted === true || p.isBoosted === "true");
@@ -743,7 +789,7 @@
             } catch (e) {
                 if(loader) loader.innerHTML = '<p class="text-rose-500 font-bold"><i class="fas fa-exclamation-triangle"></i> Échec du chargement des biens.</p>';
             }
-        }
+        }  */
 
         function renderGrid(gridId, data) {
             const grid = document.getElementById(gridId);
