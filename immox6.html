@@ -1172,7 +1172,66 @@
             } catch(e) { list.innerHTML = '<p class="text-rose-500 text-sm">Erreur.</p>'; }
         }
 
+       
+        
         function openDashAnnonceModal(ad) {
+    const content = document.getElementById('dash-annonce-modal-content');
+    
+    // 1. Recover all attached image files or fall back to a placeholder format
+    const imagesArray = ad.img ? ad.img.split(',').map(img => img.trim()).filter(Boolean) : ['https://via.placeholder.com/400x300'];
+    
+    // 2. Feed the global variables so the modal sliding functions work automatically
+    modalActivePhotos = imagesArray;
+    modalActiveIndex = 0;
+
+    content.innerHTML = `
+        <div class="relative h-44 bg-slate-900 rounded-2xl overflow-hidden mb-4 group">
+            <img id="detail-modal-img-dash" src="${imagesArray[0]}" class="w-full h-full object-cover transition duration-500">
+            
+            ${imagesArray.length > 1 ? `
+                <button onclick="changeDashModalPhoto(-1, event)" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-black transition z-10"><i class="fas fa-chevron-left text-xs"></i></button>
+                <button onclick="changeDashModalPhoto(1, event)" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-black transition z-10"><i class="fas fa-chevron-right text-xs"></i></button>
+                <div id="detail-modal-counter-dash" class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-0.5 rounded-full text-[10px] font-bold">${modalActiveIndex + 1} / ${imagesArray.length}</div>
+            ` : ''}
+        </div>
+
+        <div class="space-y-2">
+            <p><b>ID Référence :</b> <span class="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded">${ad.id}</span></p>
+            <p><b>Désignation :</b> <span class="font-bold text-slate-900">${ad.title}</span></p>
+            <p><b>Prix :</b> <span class="font-black text-yellow-600">${Number(ad.price).toLocaleString()} FCFA</span></p>
+            <p><b>Type / Catégorie :</b> <span class="px-2 py-0.5 bg-slate-900 text-white text-xs rounded-full font-bold uppercase">${ad.type}</span> / <b>${ad.cat}</b></p>
+            <p><b>Ville :</b> <b>${ad.ville}</b></p>
+            <p><b>Date Soumission :</b> <span class="text-gray-500">${ad.date || 'Récente'}</span></p>
+            <p><b>Audience Globale :</b> <span class="font-black text-blue-600"><i class="fas fa-eye mr-1"></i> ${ad.views || 0} vues</span></p>
+            <p><b>Visibilité Boost :</b> <span class="px-2 py-0.5 rounded text-xs font-bold ${ad.isBoosted === 'On' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-500'}">${ad.isBoosted === 'On' ? 'En vedette' : 'Standard'}</span></p>
+            <div class="bg-slate-50 p-3 rounded-xl border mt-2">
+                 <p class="text-xs font-bold text-gray-400 uppercase mb-1">Description :</p>
+                 <p class="text-slate-700 text-xs whitespace-pre-line leading-relaxed">${ad.description || 'Aucune description.'}</p>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('dash-annonce-modal').classList.remove('hidden');
+}
+
+// 4. Create a specific handler to target the secondary image selector inside your space
+function changeDashModalPhoto(direction, event) {
+    if(event) event.stopPropagation();
+    if (modalActivePhotos.length <= 1) return;
+
+    modalActiveIndex += direction;
+    if (modalActiveIndex >= modalActivePhotos.length) modalActiveIndex = 0;
+    if (modalActiveIndex < 0) modalActiveIndex = modalActivePhotos.length - 1;
+
+    const imgEl = document.getElementById('detail-modal-img-dash');
+    const counterEl = document.getElementById('detail-modal-counter-dash');
+
+    if (imgEl) imgEl.src = modalActivePhotos[modalActiveIndex];
+    if (counterEl) counterEl.innerText = `${modalActiveIndex + 1} / ${modalActivePhotos.length}`;
+}
+        
+        
+        /*function openDashAnnonceModal(ad) {
             const content = document.getElementById('dash-annonce-modal-content');
             const imgStr = ad.img ? ad.img.split(',')[0] : 'https://via.placeholder.com/400x300';
             content.innerHTML = `
@@ -1199,7 +1258,11 @@
                     ` : ''}
                 </div>`;
             document.getElementById('dash-annonce-modal').classList.remove('hidden');
-        }
+        } */
+
+
+
+        
         function closeDashAnnonceModal() { document.getElementById('dash-annonce-modal').classList.add('hidden'); }
 
         function switchInterestedSubTab(type) {
