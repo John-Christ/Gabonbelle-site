@@ -859,6 +859,11 @@
             document.getElementById('detail-modal-date').innerText = p.date || 'Non spécifiée';
             document.getElementById('detail-modal-views').innerText = `${p.views || 0} vues`;
 
+
+            document.getElementById('detail-modal-name').innerText = p.name;
+            document.getElementById('detail-modal-phone').innerText = p.phone;
+            
+
             const receivedBox = document.getElementById('detail-modal-received-box');
             if (receivedFormData) {
                 document.getElementById('detail-rec-name').innerText = receivedFormData.name;
