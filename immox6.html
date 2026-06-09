@@ -844,6 +844,17 @@
         // OUVERTURE PRO MODAL ET ENREGISTREMENT / FIX DE COMPTE DE VUES
         function openPropertyDetailModal(p, receivedFormData = null) {
             trackSessionUserInterest(p); // Personnalisation en arrière plan
+
+
+              const isBlue = p.ownerStatus === "On";
+                const badge = isBlue ? '<i class="fas fa-check-circle blue-verify ml-1" title="Vérifié"></i>' : '';
+               // const imagesArray = p.img ? p.img.split(',') : ['https://via.placeholder.com/400x300'];
+             //   const firstImg = imagesArray[0].trim();
+           //     const ownerPic = p.ownerImage ? p.ownerImage : 'https://via.placeholder.com/32';
+                const phoneDisplay = isBlue ? `<span class="block text-xs font-black text-emerald-600 mt-1"><i class="fas fa-phone-alt mr-1"></i> ${p.ownerPhone}</span>` : '';
+
+
+            
             
             modalActivePhotos = p.img ? p.img.split(',') : ['https://via.placeholder.com/640x480'];
             modalActiveIndex = 0;
@@ -861,7 +872,12 @@
 
 
             document.getElementById('detail-modal-name').innerText = p.ownerName;
-           document.getElementById('detail-modal-phone').innerText = p.ownerPhone;
+           document.getElementById('detail-modal-phone').innerText =  phoneDisplay,
+               // p.ownerPhone;
+
+              
+
+
             
 
             const receivedBox = document.getElementById('detail-modal-received-box');
@@ -883,6 +899,9 @@
                 if(origObj) origObj.views = newViews;
             }).catch(e => console.error("Error updating view:", e));
         }
+
+
+        
 
         function closePropertyDetailModal() { document.getElementById('property-detail-modal').classList.add('hidden'); }
 
