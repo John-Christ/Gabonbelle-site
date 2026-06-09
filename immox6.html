@@ -183,7 +183,7 @@
                     <div><span class="text-gray-400 font-medium">Date de pub. :</span> <b id="detail-modal-date" class="text-slate-800"></b></div>
                     <div><span class="text-gray-400 font-medium">Vues :</span> <b id="detail-modal-views" class="text-slate-800"></b></div>
                     <div><span class="text-gray-400 font-medium">Nom :</span> <b id="detail-modal-name" class="text-slate-800"></b></div>
-                     <div><span class="text-gray-400 font-medium">Contact :</span> <output type="tel" id="detail-modal-phone" class="text-slate-800"></output></div>
+                     <div><span class="text-gray-400 font-medium">Contact :</span> <span class="block text-xs font-black text-emerald-600 mt-1"><b type="tel" id="detail-modal-phone" class="text-slate-800"> </b></span></div>
                 </div>
 
                 <div id="detail-modal-received-box" class="bg-blue-50 p-5 rounded-2xl border border-blue-200 space-y-2 hidden">
@@ -848,11 +848,10 @@
 
               const isBlue = p.ownerStatus === "On";
                 const badge = isBlue ? '<i class="fas fa-check-circle blue-verify ml-1" title="Vérifié"></i>' : '';
-            const phoneDisplay = isBlue ? `<span class="block text-xs font-black text-emerald-600 mt-1"><i class="fas fa-phone-alt mr-1"></i> ${p.ownerPhone}</span>` : '';
                // const imagesArray = p.img ? p.img.split(',') : ['https://via.placeholder.com/400x300'];
              //   const firstImg = imagesArray[0].trim();
            //     const ownerPic = p.ownerImage ? p.ownerImage : 'https://via.placeholder.com/32';
-             //   const phoneDisplay = isBlue ? ` ${p.ownerPhone}` : '';
+                const phoneDisplay = isBlue ? ` ${p.ownerPhone}` : '';
 
 
             
