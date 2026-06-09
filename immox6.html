@@ -183,7 +183,7 @@
                     <div><span class="text-gray-400 font-medium">Date de pub. :</span> <b id="detail-modal-date" class="text-slate-800"></b></div>
                     <div><span class="text-gray-400 font-medium">Vues :</span> <b id="detail-modal-views" class="text-slate-800"></b></div>
                     <div><span class="text-gray-400 font-medium">Nom :</span> <b id="detail-modal-name" class="text-slate-800"></b></div>
-                     <div><span class="text-gray-400 font-medium">Contact :</span> <b type="tel" id="detail-modal-phone" class="text-slate-800"> </b></div>
+                     <div><span class="text-gray-400 font-medium">Contact :</span> <b type="number" id="detail-modal-phone" class="text-slate-800"> </b></div>
                 </div>
 
                 <div id="detail-modal-received-box" class="bg-blue-50 p-5 rounded-2xl border border-blue-200 space-y-2 hidden">
@@ -822,7 +822,7 @@
                             </div>
                             <h4 class="font-bold text-lg mb-2 text-slate-800 line-clamp-1">${p.title}</h4>
                             <p class="text-xl font-black text-slate-900 mb-1">${Number(p.price).toLocaleString()} <small class="text-xs font-bold text-gray-400">FCFA</small></p>
-                            ${phoneDisplay}
+                          <span typr="number">  ${phoneDisplay} </span>
                             
                             <div class="mt-auto pt-4 border-t flex justify-between items-center text-xs text-gray-500">
                                 <div class="flex items-center space-x-1.5">
