@@ -132,11 +132,12 @@
         <div class="bg-white rounded-3xl p-8 max-w-md w-full relative">
             <button onclick="closeBoostModal()" class="absolute top-4 right-4 text-gray-400 hover:text-black"><i class="fas fa-times"></i></button>
             <h3 class="text-2xl font-black mb-2 text-yellow-600"><i class="fas fa-rocket mr-2"></i> Booster l'Annonce</h3>
-            <p id="boost-prop-title" class="text-slate-700 font-bold mb-6 text-sm italic">Envoyer vos transactions Airtel money au 074 70 19 31 / Nom: John Bouma.</p>
+            <p id="boost-prop-title" class="text-slate-700 font-bold mb-6 text-sm italic"></p>
             <div class="space-y-4">
                 <input type="hidden" id="boost-prop-id">
                 <div>
-                    <label class="text-xs font-black uppercase text-gray-400 block mb-1">Votre Numéro Airtel Money(ou code Agent)</label>
+                    <span class="text-xs font-black uppercase text-gray-400 block mb-1">Envoyer vos transactions Airtel money au 074 70 19 31 / Nom: John Bouma.</span>
+                    <label class="text-xs font-black uppercase text-gray-400 block mb-1">Votre Numéro Airtel Money / ou code Agent</label>
                     <input type="tel" id="boost-airtel-phone" placeholder="07xxxxxx" class="w-full p-4 bg-slate-50 border rounded-xl outline-none">
                 </div>
                 <div>
@@ -378,22 +379,22 @@
                         <h3 class="text-2xl font-black mb-8 italic text-yellow-600">Services Premium & Paiement</h3>
                         <div class="grid md:grid-cols-2 gap-8">
                             <div class="bg-slate-50 p-6 rounded-3xl border border-gray-200">
-                                <h4 class="font-black text-lg mb-2 uppercase">Certification Blue</h4>
-                                <p class="text-sm text-gray-500 mb-6 italic leading-relaxed">Affiche votre nom réel, votre numéro et vous place en tête de recherche.</p>
+                                <h4 class="font-black text-lg mb-2 uppercase">Certification du Compte</h4>
+                                <p class="text-sm text-gray-500 mb-6 italic leading-relaxed">Affiche votre nom réel, votre numéro et vous place place en tête de recherche. Paiement au 074 70 19 31 / Nom: John BOUMA.</p>
                                 <p class="text-3xl font-black mb-6">25.000 <small class="text-xs">FCFA / mois</small></p>
                                 <div class="space-y-3">
-                                    <input type="tel" id="pay-airtel-phone-1" placeholder="Numéro expéditeur Airtel" class="w-full p-4 border rounded-2xl outline-none bg-white">
-                                    <input type="text" id="pay-airtel-id-1" placeholder="ID Transaction Airtel Money" class="w-full p-4 border rounded-2xl outline-none bg-white">
-                                    <button onclick="requestUpgradePro('Blue', this)" class="w-full gold-gradient py-4 rounded-2xl font-black text-sm shadow-lg uppercase tracking-widest">Activer via ID</button>
+                                    <input type="tel" id="pay-airtel-phone-1" placeholder="Numéro Airtel Money / ou Code Agent" class="w-full p-4 border rounded-2xl outline-none bg-white">
+                                    <input type="text" id="pay-airtel-id-1" placeholder="Votre Nom / ID Transaction Airtel Money" class="w-full p-4 border rounded-2xl outline-none bg-white">
+                                    <button onclick="requestUpgradePro('Blue', this)" class="w-full gold-gradient py-4 rounded-2xl font-black text-sm shadow-lg uppercase tracking-widest">Activer votre Certification</button>
                                 </div>
                             </div>
                             <div class="bg-slate-50 p-6 rounded-3xl border border-gray-200">
                                 <h4 class="font-black text-lg mb-2 uppercase">Mise en avant (Boost Global)</h4>
-                                <p class="text-sm text-gray-500 mb-6 italic leading-relaxed">Faites briller votre profil général sur la plateforme.</p>
-                                <p class="text-3xl font-black mb-6">10.000 <small class="text-xs">FCFA / boost</small></p>
+                                <p class="text-sm text-gray-500 mb-6 italic leading-relaxed">Faites briller votre profil général sur la plateforme. Paiement au 074 70 19 31 / Nom: John BOUMA.</p>
+                                <p class="text-3xl font-black mb-6">10.000 <small class="text-xs">FCFA </small></p>
                                 <div class="space-y-3">
-                                    <input type="tel" id="pay-airtel-phone-2" placeholder="Numéro expéditeur Airtel" class="w-full p-4 border rounded-2xl outline-none bg-white">
-                                    <input type="text" id="pay-airtel-id-2" placeholder="ID Transaction Airtel Money" class="w-full p-4 border rounded-2xl outline-none bg-white">
+                                    <input type="tel" id="pay-airtel-phone-2" placeholder="Numéro Airtel Money / ou Code Agent" class="w-full p-4 border rounded-2xl outline-none bg-white">
+                                    <input type="text" id="pay-airtel-id-2" placeholder="Votre Nom / ID Transaction Airtel Money" class="w-full p-4 border rounded-2xl outline-none bg-white">
                                     <button onclick="requestUpgradePro('Boost', this)" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-sm shadow-lg uppercase tracking-widest">Booster maintenant</button>
                                 </div>
                             </div>
@@ -511,12 +512,13 @@
 
                         <div class="bg-blue-50 p-6 rounded-3xl border border-blue-100 shadow-sm">
                             <div class="flex items-center justify-between mb-4">
-                                <span class="text-sm font-black text-blue-900 uppercase italic">Devenir Partenaire Certifié</span>
+                                <span class="text-sm font-black text-blue-900 uppercase italic">Booster ou Devenir Partenaire Certifié</span>
                                 <input type="checkbox" id="check-certify" class="w-6 h-6 accent-blue-600" onchange="toggleCertifyInputs()">
                             </div>
                             <div id="certify-inputs" class="hidden space-y-3">
-                                <input type="tel" id="post-airtel-phone" placeholder="Numéro de l'expéditeur Airtel Money" class="w-full p-3 bg-white border rounded-xl outline-none text-sm">
-                                <input type="text" id="post-airtel-id" placeholder="ID Transaction Airtel Money (25.000 FCFA)" class="w-full p-3 bg-white border rounded-xl outline-none text-sm">
+                                <span >Paiement Airtel Money au 074 70 19 31 / John BOUMA.<br> Booster(10.000 FCFA) - Devenir Partenaire Certifié(25.000 FCFA)</span>
+                                <input type="tel" id="post-airtel-phone" placeholder="Numéro Airtel Money / ou Code Agent" class="w-full p-3 bg-white border rounded-xl outline-none text-sm">
+                                <input type="text" id="post-airtel-id" placeholder="Votre Nom / ID Transaction Airtel Money" class="w-full p-3 bg-white border rounded-xl outline-none text-sm">
                                 <input type="tel" id="post-tel-owner" placeholder="Numéro de Téléphone Professionnel" class="w-full p-3 bg-white border rounded-xl outline-none text-sm">
                             </div>
                         </div>
