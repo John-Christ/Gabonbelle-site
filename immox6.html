@@ -788,6 +788,7 @@
         function toggleMobileMenu() {
             const menu = document.getElementById('mobile-menu');
             menu.classList.toggle('hidden');
+            document.getElementById("sponsored-section").style.display = "block";
         }
 
         async function apiCall(action, data = {}) {
@@ -1391,7 +1392,7 @@
             await new Promise(r => setTimeout(r, 400));
             resetFilters();
             btn.innerHTML = "Voir Tout";
-            document.getElementById("sponsored-section").style.display = "none";
+            document.getElementById("sponsored-section").style.display = "block";
         }
 
         function resetFilters() {
