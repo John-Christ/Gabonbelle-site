@@ -1389,6 +1389,7 @@
             await new Promise(r => setTimeout(r, 400));
             resetFilters();
             btn.innerHTML = "Voir Tout";
+            document.getElementById("sponsored-section").style.display = "none";
         }
 
         function resetFilters() {
@@ -1397,6 +1398,7 @@
             document.getElementById('filter-subcat').value = "";
             loadProperties();
             document.getElementById('btn-show-all').classList.add('hidden');
+            document.getElementById("sponsored-section").style.display = "block";
         }
 
         async function filterQuickPro(type, btn) {
@@ -1408,6 +1410,7 @@
             applyFiltersAndSorting();
             showSection('home');
             btn.innerHTML = orig;
+            document.getElementById("sponsored-section").style.display = "none";
         }
 
         // FORMULAIRES ET MODAUX ISBOOSTED DE LA PROPRIÉTÉ
