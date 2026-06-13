@@ -816,7 +816,59 @@
             if(countEl) countEl.innerText = `${currentIndex + 1} / ${photos.length}`;
         }
 
+       
+
+
+
+
+
         function showSection(id) {
+    // 1. Cartographie de toutes les sections (Clé de navigation -> ID HTML réel)
+    const sectionMap = {
+        'home': 'home-section',
+        'dashboard': 'dashboard-section',
+        'post': 'post-property-section',
+        'privacy-policy': 'privacy-policy',
+        'cgu-terms': 'cgu-terms',
+        'cookies-policy': 'cookies-policy',
+        'disclaimer-view': 'disclaimer-view',
+        'about-us': 'about-us',
+        'contact-us': 'contact-us'
+    };
+
+    // 2. Masquer automatiquement toutes les sections enregistrées
+    Object.values(sectionMap).forEach(sectionId => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+            element.classList.add('hidden');
+        }
+    });
+
+    // 3. Récupérer et afficher la section cible
+    const targetId = sectionMap[id];
+    const targetElement = document.getElementById(targetId);
+
+    if (targetElement) {
+        targetElement.classList.remove('hidden');
+        
+        // Expérience utilisateur : Remonte automatiquement en haut de page lors d'un changement de vue
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 4. Préservation de vos scripts d'initialisation spécifiques
+    if (id === 'dashboard') {
+        switchDashTab('activities');
+    }
+}
+
+
+        
+
+
+        
+        
+        
+        /*function showSection(id) {
             document.getElementById('home-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.add('hidden');
             document.getElementById('post-property-section').classList.add('hidden');
@@ -826,7 +878,11 @@
                 switchDashTab('activities');
             }
             if(id === 'post') document.getElementById('post-property-section').classList.remove('hidden');
-        }
+        } */
+
+
+
+            
 
         function updateAuthUI() {
             const btn = document.getElementById('nav-auth-btn');
