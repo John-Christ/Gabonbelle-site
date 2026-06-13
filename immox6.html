@@ -1336,24 +1336,13 @@ function changeDashModalPhoto(direction, event) {
             const content = document.getElementById('dash-interest-modal-content');
             const ad = item.propertyInfo;
 
-
-             const isBlue = p.ownerStatus === "On";
-                const badge = isBlue ? '<i class="fas fa-check-circle blue-verify ml-1" title="Vérifié"></i>' : '';
-               // const imagesArray = p.img ? p.img.split(',') : ['https://via.placeholder.com/400x300'];
-             //   const firstImg = imagesArray[0].trim();
-           //     const ownerPic = p.ownerImage ? p.ownerImage : 'https://via.placeholder.com/32';
-            //   <p><b>Email :</b> <a href="mailto:${item.email}" class="font-bold text-blue-600 hover:underline"><i class="fas fa-envelope"></i> ${item.email}</a></p>
-                const xitem.email = isBlue ? ` ${item.email}` : 'Devenez partenaire pour voir le contact email.';
-
-
-
             
             content.innerHTML = `
                 <div class="bg-slate-50 p-4 rounded-2xl border space-y-2">
                     <h4 class="font-black text-xs uppercase text-yellow-600"><i class="fas fa-user mr-1"></i> Données Coordonnées Émetteur</h4>
                     <p><b>Nom Client :</b> <span class="font-bold text-slate-800">${item.name}</span></p>
                     <p><b>Téléphone :</b> <a href="tel:${item.tel}" class="font-bold text-blue-600 hover:underline"><i class="fas fa-phone-alt"></i> ${item.tel}</a></p>
-                    <p><b>Email :</b> <a href="mailto:${item.email}" class="font-bold text-blue-600 hover:underline"><i class="fas fa-envelope"></i> ${xitem.email}</a></p>
+                    <p><b>Email :</b> <a href="mailto:${item.email}" class="font-bold text-blue-600 hover:underline"><i class="fas fa-envelope"></i> ${item.email}</a></p>
                     <p class="text-[11px] text-gray-400 italic">Généré le : ${item.timestamp}</p>
                 </div>
                 <div class="border rounded-2xl p-4 space-y-2 bg-white">
