@@ -1018,10 +1018,98 @@
             }
         }
 
-     
-        
-        
+
+
+
+
+
+
         async function loadProperties() {
+    const loader = document.getElementById('properties-loader');
+    const grid = document.getElementById('property-grid');
+    try {
+        allProperties = await apiCall('getAllProperties');
+
+        // --- DÉBUT DE LA MODIFICATION POUR LE BADGE ---
+        if (currentUser && currentUser.email) {
+            // On cherche une annonce appartenant à l'utilisateur connecté
+            const myData = allProperties.find(p => p.ownerEmail.toLowerCase().trim() === currentUser.email.toLowerCase().trim());
+            if (myData && myData.ownerStatus !== currentUser.status) {
+                // Mise à jour de l'objet en mémoire
+                currentUser.status = myData.ownerStatus;
+                // Mise à jour du localStorage pour que ce soit permanent
+                localStorage.setItem('gabonbelle_user', JSON.stringify(currentUser));
+                // Rafraîchissement de l'interface (nom, photo et badge)
+                if (typeof updateAuthUI === 'function') updateAuthUI();
+            }
+        }
+        // --- FIN DE LA MODIFICATION ---
+
+        // 1. Filtrer toutes les propriétés sponsorisées ("isBoosted")
+        const boostedProperties = allProperties.filter(p => p.isBoosted === "On" || p.isBoosted === true || p.isBoosted === "true");
+        
+        // 2. Sélection aléatoire pondérée de 3 propriétés maximum par session
+        const selectedSponsored = [];
+        const pool = [...boostedProperties]; // Copie locale du catalogue boosté
+        const maxDisplay = Math.min(3, pool.length); // Affiche 3 biens max (ou le total disponible si < 3)
+
+        for (let i = 0; i < maxDisplay; i++) {
+            // Calcul de la masse/poids total des pourcentages restants dans le pool
+            const totalWeight = pool.reduce((sum, p) => {
+                const weight = Number(p.percentage || p.pourcentage || 1);
+                return sum + (weight >= 1 && weight <= 100 ? weight : 1);
+            }, 0);
+
+            let randomTarget = Math.random() * totalWeight;
+            let cumulativeWeight = 0;
+            let selectedIndex = 0;
+
+            // Parcours du pool pour trouver l'élément correspondant au tirage
+            for (let j = 0; j < pool.length; j++) {
+                const weight = Number(pool[j].percentage || pool[j].pourcentage || 1);
+                cumulativeWeight += (weight >= 1 && weight <= 100 ? weight : 1);
+                
+                if (randomTarget <= cumulativeWeight) {
+                    selectedIndex = j;
+                    break;
+                }
+            }
+
+            // Extraction de l'élément sélectionné du pool pour éviter les doublons (sans remise)
+            selectedSponsored.push(pool.splice(selectedIndex, 1)[0]);
+        }
+        
+        // 3. Rendu de la grille sponsorisée limitée à l'échantillon tiré au sort
+        const sponsoredSection = document.getElementById('sponsored-section');
+        if(selectedSponsored.length > 0) {
+            renderGrid('sponsored-grid', selectedSponsored);
+            sponsoredSection.classList.remove('hidden');
+        } else { 
+            sponsoredSection.classList.add('hidden'); 
+        }
+
+        applyFiltersAndSorting();
+        if(loader) loader.classList.add('hidden');
+        if(grid) grid.classList.remove('hidden');
+    } catch (e) {
+        console.error(e);
+        if(loader) loader.innerHTML = '<p class="text-rose-500 font-bold"><i class="fas fa-exclamation-triangle"></i> Échec du chargement des biens.</p>';
+    }
+}
+
+
+
+
+
+        
+
+
+
+
+
+        
+        
+    /*    async function loadProperties() {
     const loader = document.getElementById('properties-loader');
     const grid = document.getElementById('property-grid');
     try {
@@ -1059,7 +1147,13 @@
         console.error(e);
         if(loader) loader.innerHTML = '<p class="text-rose-500 font-bold"><i class="fas fa-exclamation-triangle"></i> Échec du chargement des biens.</p>';
     }
-}
+}  */
+
+
+
+
+
+        
         
         
         
