@@ -102,7 +102,7 @@
             <div id="form-register" class="space-y-4 hidden">
                 <input type="text" id="reg-name" placeholder="Nom complet" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
                 <input type="email" id="reg-email" placeholder="Adresse Email" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
-                <input type="tel" id="reg-phone" placeholder="Numéro de téléphone" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
+                <input type="text" id="reg-phone" placeholder="Numéro de téléphone" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
                 <input type="password" id="reg-pass" placeholder="Mot de passe" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-yellow-500">
                 <button onclick="handleRegister()" id="btn-register-exec" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-black transition">S'INSCRIRE</button>
             </div>
@@ -117,7 +117,7 @@
             <div class="space-y-4">
                 <input type="hidden" id="interest-prop-id">
                 <input type="text" id="int-name" placeholder="Votre Nom complet" class="w-full p-4 bg-slate-50 border rounded-xl outline-none">
-                <input type="tel" id="int-tel" placeholder="Votre Numéro (Airtel Money/Moov)" class="w-full p-4 bg-slate-50 border rounded-xl outline-none">
+                <input type="text" id="int-tel" placeholder="Votre Numéro (Airtel Money/Moov)" class="w-full p-4 bg-slate-50 border rounded-xl outline-none">
                 <input type="email" id="int-email" placeholder="Votre Email" class="w-full p-4 bg-slate-50 border rounded-xl outline-none">
                 <div class="flex space-x-2">
                     <button onclick="submitInterest()" id="btn-int-exec" class="flex-1 bg-slate-900 text-white py-4 rounded-xl font-bold">ENVOYER</button>
@@ -528,6 +528,72 @@
             </div>
         </section>
     </main>
+
+
+
+
+
+
+
+
+    <footer class="bg-slate-900 text-slate-400 text-xs py-8 mt-12 border-t border-slate-800 w-full dynamic-footer">
+    <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <div class="space-y-2">
+            <div class="flex items-center gap-2">
+                <span class="text-white font-black text-sm uppercase tracking-wider">Gabonbelle</span>
+                <span class="bg-amber-500/10 text-amber-500 text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-tight">Immo</span>
+            </div>
+            <p class="text-slate-500 leading-relaxed max-w-sm">
+                Votre plateforme de référence pour l'investissement immobilier au Gabon. Trouvez des chambres, appartements, villas et terrains vérifiés.
+            </p>
+        </div>
+
+        <div class="space-y-2">
+            <span class="text-slate-200 font-bold uppercase tracking-wider text-[11px]">Mentions Légales</span>
+            <ul class="grid grid-cols-1 gap-1.5">
+                <li><a href="#privacy" onclick="showSection('privacy-policy')" class="hover:text-white transition flex items-center gap-1.5"><i class="fas fa-shield-alt text-[10px] text-slate-600"></i> Politique de Confidentialité</a></li>
+                <li><a href="#terms" onclick="showSection('cgu-terms')" class="hover:text-white transition flex items-center gap-1.5"><i class="fas fa-file-contract text-[10px] text-slate-600"></i> Conditions Générales d'Utilisation (CGU)</a></li>
+                <li><a href="#cookies" onclick="showSection('cookies-policy')" class="hover:text-white transition flex items-center gap-1.5"><i class="fas fa-cookie-bite text-[10px] text-slate-600"></i> Politique des Cookies</a></li>
+                <li><a href="#disclaimer" onclick="showSection('disclaimer-view')" class="hover:text-white transition flex items-center gap-1.5"><i class="fas fa-excretion text-[10px] text-slate-600"></i> Avis de Non-Responsabilité</a></li>
+            </ul>
+        </div>
+
+        <div class="space-y-2">
+            <span class="text-slate-200 font-bold uppercase tracking-wider text-[11px]">Support & Navigation</span>
+            <ul class="grid grid-cols-1 gap-1.5">
+                <li><a href="#about" onclick="showSection('about-us')" class="hover:text-white transition flex items-center gap-1.5"><i class="fas fa-info-circle text-[10px] text-slate-600"></i> À Propos de Nous</a></li>
+                <li><a href="#contact" onclick="showSection('contact-us')" class="hover:text-white transition flex items-center gap-1.5"><i class="fas fa-envelope text-[10px] text-slate-600"></i> Contactez-nous</a></li>
+                <li class="text-slate-500 flex items-center gap-1.5 pt-1 border-t border-slate-800/50 mt-1">
+                    <i class="fas fa-headset text-[10px] text-slate-600"></i> Assistance: support@gabonbelle.com
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 mt-8 pt-4 border-t border-slate-800/60 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 gap-2">
+        <p>&copy; 2026 Gabonbelle. Tous droits réservés.</p>
+        <div class="flex items-center gap-2 text-[10px] text-slate-600">
+            <span>Conforme aux règles de conformité éditeur Google AdSense</span>
+        </div>
+    </div>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <!-- SCRIPTS EN HTML COMPILÉ -->
     <script>
